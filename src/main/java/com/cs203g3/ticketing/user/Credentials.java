@@ -1,6 +1,11 @@
 package com.cs203g3.ticketing.user;
 
+import lombok.Data;
+
+@Data
 public class Credentials {
-    public String username;
-    public String password;    
+    
+    private String username;
+
+    private String password;    
 }

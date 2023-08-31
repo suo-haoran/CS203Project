@@ -14,12 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/users")
 public class UserController {
     private UserRepository users;
-    private BCryptPasswordEncoder encoder;
-    private CustomUserDetailsService service;
+    private UserService service;
 
-    public UserController(UserRepository users, BCryptPasswordEncoder encoder, CustomUserDetailsService service){
+    public UserController(UserRepository users,UserService service){
         this.users = users;
-        this.encoder = encoder;
         this.service = service;
     }
 
@@ -28,9 +26,8 @@ public class UserController {
         return users.findAll();
     }
 
-    @PostMapping("/login")
-    public UserDetails login(@RequestBody Credentials cred) {
-        cred.password = encoder.encode(cred.password);
+    @PostMapping("/auth/login")
+    public User login(@RequestBody Credentials cred) {
         return service.login(cred);
     }
 
@@ -39,9 +36,8 @@ public class UserController {
     * @param user
      * @return
      */
-    @PostMapping("/signup")
+    @PostMapping("/auth/signup")
     public User addUser(@RequestBody User user){
-        user.setPassword(encoder.encode(user.getPassword()));
-        return users.save(user);
+        return service.addUser(user);
     }
 }

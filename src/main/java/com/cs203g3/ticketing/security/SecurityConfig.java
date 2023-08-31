@@ -39,14 +39,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests((auth) -> {
-                    auth.requestMatchers(HttpMethod.GET, "/user", "/user/**").authenticated()
-                            .requestMatchers(HttpMethod.POST, "/user/signup", "/user/login").permitAll()
-                            .requestMatchers(HttpMethod.PUT, "/user/**").hasRole("USER");
+                    auth.requestMatchers("/users/auth/login", "/users/auth/signup").permitAll();
                 })
                 .authenticationProvider(authenticationProvider())
                 .formLogin((formLogin) -> {
                     formLogin.disable();
-                });
+                })
+                // We don't need csrf token for each unsafe request.
+                .csrf(csrf -> csrf.disable());
 
         return http.build();
     }
