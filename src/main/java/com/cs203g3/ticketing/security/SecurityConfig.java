@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> {
                     auth.requestMatchers("/users/auth/login", "/users/auth/signup").permitAll();
                 })
+                
                 .authenticationProvider(authenticationProvider())
                 .formLogin((formLogin) -> {
                     formLogin.disable();
