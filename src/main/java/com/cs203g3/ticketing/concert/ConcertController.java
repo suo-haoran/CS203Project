@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cs203g3.ticketing.concert.dto.ConcertRequestDto;
+
 @RestController
 @RequestMapping("/concerts")
 public class ConcertController {
+
     private ConcertService concertService;
 
     public ConcertController(ConcertService cs) {
@@ -34,13 +37,13 @@ public class ConcertController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Concert addConcert(@RequestBody Concert concert) {
-        return concertService.addConcert(concert);
+    public Concert addConcert(@RequestBody ConcertRequestDto concertRequestDto) {
+        return concertService.addConcert(concertRequestDto);
     }
 
     @PutMapping("/{id}")
-    public Concert updateConcert(@PathVariable Long id, @RequestBody Concert concert) {
-        return concertService.updateConcert(id, concert);
+    public Concert updateConcert(@PathVariable Long id, @RequestBody ConcertRequestDto concertRequestDto) {
+        return concertService.updateConcert(id, concertRequestDto);
     }
 
     @DeleteMapping("/{id}")
