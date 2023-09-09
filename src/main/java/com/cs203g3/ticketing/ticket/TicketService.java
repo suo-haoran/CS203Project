@@ -6,7 +6,7 @@ import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
 
-import com.cs203g3.exception.NotFoundException;
+import com.cs203g3.ticketing.exception.NotFoundException;
 
 @Service
 public class TicketService {
