@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.cs203g3.exception.ResourceNotFoundException;
+import com.cs203g3.ticketing.exception.ResourceNotFoundException;
+
 
 @Service
 public class VenueServiceImpl implements VenueService {

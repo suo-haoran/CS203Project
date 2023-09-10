@@ -6,8 +6,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cs203g3.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.concert.dto.ConcertRequestDto;
+import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.venue.Venue;
 import com.cs203g3.ticketing.venue.VenueRepository;
 

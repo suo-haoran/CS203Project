@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.cs203g3.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
+import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 
 @Service
 public class ConcertSessionServiceImpl implements ConcertSessionService {
