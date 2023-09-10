@@ -2,6 +2,8 @@ package com.cs203g3.ticketing.ticket;
 
 import java.util.UUID;
 
+import com.cs203g3.ticketing.concertSession.ConcertSession;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,14 +20,14 @@ public class Ticket {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "categoryId")
     private TicketCategory category;
 
     @ManyToOne
-    @JoinColumn(name = "concert_session_id")
+    @JoinColumn(name = "concertSessionId")
     private ConcertSession concertSession;
 
     @ManyToOne
-    @JoinColumn(name = "receipt_id")
+    @JoinColumn(name = "receiptId")
     private Receipt receipt;
 }
