@@ -6,8 +6,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cs203g3.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.concert.dto.ConcertRequestDto;
-import com.cs203g3.ticketing.venue.VenueNotFoundException;
+import com.cs203g3.ticketing.venue.Venue;
 import com.cs203g3.ticketing.venue.VenueRepository;
 
 @Service
@@ -42,7 +43,7 @@ public class ConcertServiceImpl implements ConcertService {
         return venues.findById(venueId).map(venue -> {
             newConcert.setVenue(venue);
             return concerts.save(newConcert);
-        }).orElseThrow(() -> new VenueNotFoundException(venueId));
+        }).orElseThrow(() -> new ResourceNotFoundException(Venue.class, venueId));
     }
 
     @Override
@@ -55,15 +56,12 @@ public class ConcertServiceImpl implements ConcertService {
                 newConcert.setId(id);
                 newConcert.setVenue(venue);
                 return concerts.save(newConcert);
-            }).orElseThrow(() -> new VenueNotFoundException(venueId));
-        }).orElseThrow(() -> new ConcertNotFoundException(id));
+            }).orElseThrow(() -> new ResourceNotFoundException(Venue.class, venueId));
+        }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, id));
     }
 
     @Override
     public void deleteConcert(Long id) {
-        concerts.findById(id).map(concert -> {
-            concerts.delete(concert);
-            return concert;
-        }).orElseThrow(() -> new ConcertNotFoundException(id));
+        concerts.deleteById(id);
     }
 }

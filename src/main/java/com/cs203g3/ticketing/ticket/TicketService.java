@@ -6,7 +6,7 @@ import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
 
-import com.cs203g3.exception.NotFoundException;
+import com.cs203g3.exception.ResourceNotFoundException;
 
 @Service
 public class TicketService {
@@ -28,16 +28,16 @@ public class TicketService {
     }
 
     public Ticket getTicketById(UUID id) {
-        return ticketRepository.findById(id).orElseThrow(() -> new NotFoundException("Ticket not found"));
+        return ticketRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Could not find Ticket with ID #" + id));
     }
 
     public TicketCategory getTicketCategoryById(Long id) {
-        return ticketCategoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Ticket category not found"));
+        return ticketCategoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(TicketCategory.class, id));
     }
 
     public Ticket updateTicket(Ticket ticket) {
         if (!ticketRepository.existsById(ticket.getId())) {
-            throw new NotFoundException("Ticket not found");
+            throw new ResourceNotFoundException("Could not find Ticket with ID #" + ticket.getId());
         }
         return ticketRepository.save(ticket);
     }

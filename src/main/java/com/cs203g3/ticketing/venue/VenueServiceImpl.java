@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.cs203g3.exception.ResourceNotFoundException;
+
 @Service
 public class VenueServiceImpl implements VenueService {
     
@@ -18,7 +20,7 @@ public class VenueServiceImpl implements VenueService {
     }
 
     public Venue getVenue(Long id) {
-        return venues.findById(id).map(venue -> venue).orElseThrow(() -> new VenueNotFoundException(id));
+        return venues.findById(id).map(venue -> venue).orElseThrow(() -> new ResourceNotFoundException(Venue.class, id));
     }
 
     public Venue addVenue(Venue venue) {
@@ -29,13 +31,10 @@ public class VenueServiceImpl implements VenueService {
         return venues.findById(id).map(venue -> {
             updatedVenue.setId(id);
             return venues.save(updatedVenue);
-        }).orElseThrow(() -> new VenueNotFoundException(id));
+        }).orElseThrow(() -> new ResourceNotFoundException(Venue.class, id));
     }
 
     public void deleteVenue(Long id) {
-        venues.findById(id).map(venue -> {
-            venues.delete(venue);
-            return venue;
-        }).orElseThrow(() -> new VenueNotFoundException(id));
+        venues.deleteById(id);
     }
 }

@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.cs203g3.exception.NotFoundException;
+import com.cs203g3.exception.ResourceNotFoundException;
+import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
 
 @Service
@@ -22,7 +23,7 @@ public class ConcertSessionServiceImpl implements ConcertSessionService {
     public List<ConcertSession> getAllConcertSessionsByConcertId(Long concertId) {
         return concerts.findById(concertId).map(concert -> {
             return concertSessions.findByConcert(concert);
-        }).orElseThrow(() -> new NotFoundException("Could not find Concert with ID #"+concertId));
+        }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ConcertSessionServiceImpl implements ConcertSessionService {
     public ConcertSession getConcertSession(Long id) {
         return concertSessions.findById(id)
             .map(session -> session)
-            .orElseThrow(() -> new NotFoundException("Could not find ConcertSession with ID #"+id));
+            .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, id));
     }
 
     @Override
@@ -42,7 +43,7 @@ public class ConcertSessionServiceImpl implements ConcertSessionService {
         concerts.findById(concertId).map(concert -> {
             newConcertSession.setConcert(concert);
             return concert;
-        }).orElseThrow(() -> new NotFoundException("Could not find ConcertSession with ID #"+concertId));
+        }).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertId));
 
         return concertSessions.save(newConcertSession);
     }
@@ -52,7 +53,7 @@ public class ConcertSessionServiceImpl implements ConcertSessionService {
         return concertSessions.findById(id).map(cs -> {
             newConcertSession.setId(id);
             return concertSessions.save(newConcertSession);
-        }).orElseThrow(() -> new NotFoundException("Could not find ConcertSession with ID #"+id));
+        }).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, id));
     }
 
     @Override
