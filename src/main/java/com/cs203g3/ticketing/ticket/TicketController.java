@@ -8,7 +8,6 @@ public class TicketController {
     
     private TicketService ticketService;
 
-    @Autowired
     public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
     }

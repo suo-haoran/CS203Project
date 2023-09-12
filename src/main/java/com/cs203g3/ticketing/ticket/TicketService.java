@@ -2,15 +2,13 @@ package com.cs203g3.ticketing.ticket;
 
 import java.util.UUID;
 
-import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException.NotFound;
 
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 
 @Service
 public class TicketService {
-    
+
     private TicketRepository ticketRepository;
     private TicketCategoryRepository ticketCategoryRepository;
 

@@ -1,30 +1,35 @@
 package com.cs203g3.ticketing.user;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
-import java.util.UUID;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import io.micrometer.common.lang.NonNull;
-import jakarta.annotation.Nonnull;
+import java.util.HashSet;
+import java.util.Set;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+@Entity
+@Table(name = "user", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
+})
 @Data
 @NoArgsConstructor
-@Entity
-public class User implements UserDetails {
+@AllArgsConstructor
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,37 +54,10 @@ public class User implements UserDetails {
     @Size(min = 4, max=45)
     private String countryOfResidences;
 
+    @NotNull
     private Date dob;
 
-    @NotNull
-    private String authorities;
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays.asList(new SimpleGrantedAuthority(authorities));
-    }
-
-    /*
-     * The various is___Expired() methods return a boolean to indicate whether
-     * or not the user’s account is enabled or expired.
-     */
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 }

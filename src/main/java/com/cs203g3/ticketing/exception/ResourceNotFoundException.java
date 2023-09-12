@@ -9,7 +9,7 @@ public class ResourceNotFoundException extends RuntimeException {
         super(message);
     }
 
-    public ResourceNotFoundException(Class resource, Long id) {
+    public <T> ResourceNotFoundException(Class<T> resource, Long id) {
         super(String.format("Could not find %s with ID #%d", resource.getSimpleName(), id));
     }
 }
