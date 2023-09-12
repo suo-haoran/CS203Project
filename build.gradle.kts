@@ -29,7 +29,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 
-	implementation("org.modelmapper:modelmapper:2.1.1")
+	implementation("org.modelmapper:modelmapper:3.1.1")
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
 	
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")

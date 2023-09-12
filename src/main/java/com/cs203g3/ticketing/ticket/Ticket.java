@@ -3,6 +3,7 @@ package com.cs203g3.ticketing.ticket;
 import java.util.UUID;
 
 import com.cs203g3.ticketing.concertSession.ConcertSession;
+import com.cs203g3.ticketing.receipt.Receipt;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
