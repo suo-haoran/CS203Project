@@ -1,27 +1,37 @@
-GET http://localhost:8080/users
-Accept: application/json
-
-###
-
-POST http://localhost:8080/users/auth/login
+POST http://localhost:8080/api/auth/signin
 Content-Type: application/json
 
 {
-    "username": "user01",
-    "password": "password"
+    "username": "testuser1",
+    "password": "test123"
 }
 
 ###
 
-POST http://localhost:8080/users/auth/signup
+POST http://localhost:8080/api/auth/signup
 Content-Type: application/json
 
 {
-    "username": "user01",
-    "password": "password",
-    "email": "someuser@gmail.com",
-    "phone": "+6500000000",
-    "countryOfResidences": "Japan",
-    "dob": "2017-01-02",
-    "authorities": "USER"
+    "username": "testuser1",
+    "email": "example@gmail.com",
+    "password": "test123",
+    "phone":"12345678",
+    "countryOfResidences": "Sing",
+    "dob": "2019-01-01",
+    "role": ["admin"]
+
 }
+
+###
+
+POST http://localhost:8080/api/auth/signin
+Content-Type: application/json
+
+{
+    "username": "testuser1",
+    "password": "test13"
+}
+
+###
+
+GET http://localhost:8080/api/test/test
