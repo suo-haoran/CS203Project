@@ -27,9 +27,6 @@ public class Venue {
     @Size(max=255)
     private String name;
 
-    @NotNull
-    private int capacity;
-
     @JsonIgnore
     @OneToMany(mappedBy="venue", cascade = CascadeType.ALL)
     private List<Concert> concert;
