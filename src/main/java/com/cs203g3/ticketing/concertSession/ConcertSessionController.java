@@ -27,9 +27,9 @@ public class ConcertSessionController {
         return concertSessionService.getAllConcertSessionsByConcertId(concertId);
     }
 
-    @GetMapping("/{id}")
-    public ConcertSession getConcertSession(@PathVariable Long id) {
-        return concertSessionService.getConcertSession(id);
+    @GetMapping("/{sessionId}")
+    public ConcertSession getConcertSession(@PathVariable Long concertId, @PathVariable Long sessionId) {
+        return concertSessionService.getConcertSessionByConcertIdAndSessionId(concertId, sessionId);
     }
 
     @PostMapping
@@ -37,13 +37,13 @@ public class ConcertSessionController {
         return concertSessionService.addConcertSession(concertId, newConcertSession);
     }
 
-    @PutMapping("/{id}")
-    public ConcertSession updateConcertSession(@PathVariable Long id, @RequestBody ConcertSession newConcertSession) {
-        return concertSessionService.updateConcertSession(id, newConcertSession);
+    @PutMapping("/{sessionId}")
+    public ConcertSession updateConcertSession(@PathVariable Long concertId, @PathVariable Long sessionId, @RequestBody ConcertSession newConcertSession) {
+        return concertSessionService.updateConcertSession(concertId, sessionId, newConcertSession);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteConcertSession(@PathVariable Long id) {
-        concertSessionService.deleteConcertSession(id);
+    @DeleteMapping("/{sessionId}")
+    public void deleteConcertSession(@PathVariable Long concertId, @PathVariable Long sessionId) {
+        concertSessionService.deleteConcertSession(concertId, sessionId);
     }
 }

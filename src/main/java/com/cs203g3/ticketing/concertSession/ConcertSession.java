@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -23,6 +24,10 @@ public class ConcertSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    private LocalDateTime datetime;
+
+    @NotNull
     @ManyToOne
     @JoinColumn(name="concertId")
     private Concert concert;
@@ -30,7 +35,5 @@ public class ConcertSession {
     @JsonIgnore
     @OneToMany(mappedBy="concertSession")
     private List<Ticket> tickets;
-
-    private LocalDateTime datetime;
 }
 

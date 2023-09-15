@@ -1,6 +1,7 @@
 package com.cs203g3.ticketing;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -16,8 +17,11 @@ public class TicketingApplication {
 	@Bean
 	public ModelMapper modelMapper() {
 		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
 		modelMapper.typeMap(Receipt.class, ReceiptResponseDto.class)
 			.addMapping(src -> src.getUser().getUsername(), ReceiptResponseDto::setUsername);
+
 		return modelMapper;
 	}
 
