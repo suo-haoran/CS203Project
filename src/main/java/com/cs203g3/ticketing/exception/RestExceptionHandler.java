@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,9 +17,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import com.cs203g3.ticketing.security.auth.EmailTakenException;
-import com.cs203g3.ticketing.security.auth.UsernameTakenException;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -45,15 +43,15 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         response.sendError(HttpStatus.BAD_REQUEST.value());
     }
 
-    @ExceptionHandler({ EmailTakenException.class, UsernameTakenException.class })
+    @ExceptionHandler({ BadCredentialsException.class })
     public ResponseEntity<Object> handleAccessDeniedException(
             Exception ex, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", new Date());
-        body.put("status", HttpStatus.FORBIDDEN);
+        body.put("status", HttpStatus.UNAUTHORIZED);
         body.put("message", ex.getMessage());
         body.put("path", request.getDescription(false));
-        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler({ RuntimeException.class })
