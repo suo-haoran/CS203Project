@@ -1,46 +1,82 @@
 package com.cs203g3.ticketing.ticket;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cs203g3.ticketing.concert.Concert;
+import com.cs203g3.ticketing.concert.ConcertRepository;
+import com.cs203g3.ticketing.concertSession.ConcertSession;
+import com.cs203g3.ticketing.concertSession.ConcertSessionRepository;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
+import com.cs203g3.ticketing.receipt.Receipt;
+import com.cs203g3.ticketing.receipt.ReceiptRepository;
+import com.cs203g3.ticketing.seat.Seat;
+import com.cs203g3.ticketing.seat.SeatRepository;
+import com.cs203g3.ticketing.ticket.dto.TicketRequestDto;
+import com.cs203g3.ticketing.ticket.dto.TicketResponseDto;
+import com.cs203g3.ticketing.ticket.dto.TicketResponseWithoutReceiptDto;
+import com.cs203g3.ticketing.ticket.dto.TicketResponseWithoutSessionDto;
 
 @Service
 public class TicketService {
 
-    private TicketRepository ticketRepository;
-    private TicketCategoryRepository ticketCategoryRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    public TicketService(TicketRepository ticketRepository, TicketCategoryRepository ticketCategoryRepository) {
-        this.ticketRepository = ticketRepository;
-        this.ticketCategoryRepository = ticketCategoryRepository;
+    private TicketRepository tickets;
+    private ConcertRepository concerts;
+    private ConcertSessionRepository sessions;
+    private ReceiptRepository receipts;
+    private SeatRepository seats;
+
+    public TicketService(TicketRepository tickets, ConcertRepository concerts, ConcertSessionRepository sessions, ReceiptRepository receipts, SeatRepository seats) {
+        this.tickets = tickets;
+        this.concerts = concerts;
+        this.sessions = sessions;
+        this.receipts = receipts;
+        this.seats = seats;
     }
 
-    public Ticket createTicket(Ticket ticket) {
-        return ticketRepository.save(ticket);
+    public List<TicketResponseWithoutSessionDto> getAllTicketsByConcertIdAndSessionId(Long concertId, Long sessionId) {
+        Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
+        ConcertSession session = sessions.findByConcertAndId(concert, sessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, sessionId));
+
+        return tickets.findByConcertSessionConcertAndConcertSession(concert, session).stream()
+            .map(ticket -> modelMapper.map(ticket, TicketResponseWithoutSessionDto.class))
+            .collect(Collectors.toList());
     }
 
-    public TicketCategory createTicketCategory(TicketCategory ticketCategory) {
-        return ticketCategoryRepository.save(ticketCategory);
+    public List<TicketResponseWithoutReceiptDto> getAllTicketsByReceiptId(UUID receiptId) {
+        Receipt receipt = receipts.findById(receiptId).orElseThrow(() -> new ResourceNotFoundException(Receipt.class, receiptId));
+
+        return tickets.findByReceipt(receipt).stream()
+            .map(ticket -> modelMapper.map(ticket, TicketResponseWithoutReceiptDto.class))
+            .collect(Collectors.toList());
     }
 
-    public Ticket getTicketById(UUID id) {
-        return ticketRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Could not find Ticket with ID #" + id));
+    public TicketResponseDto getTicketByUuid(UUID uuid) {
+        return tickets.findById(uuid)
+            .map(ticket -> modelMapper.map(ticket, TicketResponseDto.class))
+            .orElseThrow(() -> new ResourceNotFoundException(Ticket.class, uuid));
     }
 
-    public TicketCategory getTicketCategoryById(Long id) {
-        return ticketCategoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(TicketCategory.class, id));
-    }
+    public TicketResponseDto addTicket(TicketRequestDto newTicketDto) {
+        Long sessionId = newTicketDto.getConcertSessionId();
+        Long seatId = newTicketDto.getSeatId();
+        UUID receiptId = newTicketDto.getReceiptId();
 
-    public Ticket updateTicket(Ticket ticket) {
-        if (!ticketRepository.existsById(ticket.getId())) {
-            throw new ResourceNotFoundException("Could not find Ticket with ID #" + ticket.getId());
-        }
-        return ticketRepository.save(ticket);
-    }
+        ConcertSession session = sessions.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, sessionId));
+        Seat seat = seats.findBySectionVenueAndId(session.getConcert().getVenue(), seatId)
+            .orElseThrow(() -> new ResourceNotFoundException(String.format("Seat with ID #%d either does not exist or does not belong to Venue of Concert Session with ID #%d", seatId, sessionId)));
+        Receipt receipt = receipts.findById(receiptId).orElseThrow(() -> new ResourceNotFoundException(Receipt.class, receiptId));
 
-    public void deleteTicket(Ticket ticket) {
-        ticketRepository.delete(ticket);
+        Ticket newTicket = new Ticket(null, seat, session, receipt);
+        newTicket = tickets.save(newTicket);
+        return modelMapper.map(newTicket, TicketResponseDto.class);
     }
 }

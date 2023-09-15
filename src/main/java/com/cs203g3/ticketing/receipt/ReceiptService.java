@@ -6,10 +6,13 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
+import com.cs203g3.ticketing.receipt.dto.ReceiptRequestDto;
 import com.cs203g3.ticketing.receipt.dto.ReceiptResponseDto;
+import com.cs203g3.ticketing.user.User;
 import com.cs203g3.ticketing.user.UserRepository;
 
 @Service
@@ -37,8 +40,7 @@ public class ReceiptService {
     }
 
     public List<ReceiptResponseDto> getAllReceipts() {
-        return receipts.findAll()
-            .stream()
+        return receipts.findAll().stream()
             .map(receipt -> modelMapper.map(receipt, ReceiptResponseDto.class))
             .collect(Collectors.toList());
     }
@@ -49,15 +51,33 @@ public class ReceiptService {
             .orElseThrow(() -> new ResourceNotFoundException(Receipt.class, uuid));
     }
 
-    public Receipt addReceipt(Receipt newReceipt) {
-        return receipts.save(newReceipt);
+    public ReceiptResponseDto addReceipt(ReceiptRequestDto newReceiptDto) {
+        Long userId = newReceiptDto.getUserId();
+        User user = users.findById(userId).orElseThrow(() -> new ResourceNotFoundException(User.class, userId));
+
+        Receipt newReceipt = modelMapper.map(newReceiptDto, Receipt.class);
+        newReceipt.setUser(user);
+        receipts.save(newReceipt);
+
+        return modelMapper.map(newReceipt, ReceiptResponseDto.class);
     }
 
-    public Receipt updateReceipt(UUID uuid, Receipt newReceipt) {
-        return receipts.findById(uuid).map(receipt -> {
-            newReceipt.setUuid(uuid);
-            return receipts.save(newReceipt);
-        }).orElseThrow(() -> new ResourceNotFoundException(Receipt.class, uuid));
+    public ReceiptResponseDto addReceiptAsUserId(Long userId, ReceiptRequestDto newReceiptDto) {
+        newReceiptDto.setUserId(userId);
+        return this.addReceipt(newReceiptDto);
+    }
+
+    public ReceiptResponseDto updateReceipt(UUID uuid, ReceiptRequestDto newReceiptDto) {
+        receipts.findById(uuid).orElseThrow(() -> new ResourceNotFoundException(Receipt.class, uuid));
+        Long userId = newReceiptDto.getUserId();
+        User user = users.findById(userId).orElseThrow(() -> new ResourceNotFoundException(User.class, userId));
+
+        Receipt newReceipt = modelMapper.map(newReceiptDto, Receipt.class);
+        newReceipt.setUuid(uuid);
+        newReceipt.setUser(user);
+        receipts.save(newReceipt);
+
+        return modelMapper.map(newReceipt, ReceiptResponseDto.class);
     }
 
     public void deleteReceipt(UUID uuid) {

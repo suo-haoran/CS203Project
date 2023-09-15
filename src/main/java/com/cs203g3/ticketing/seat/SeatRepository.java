@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {
     List<Seat> findAllBySectionVenueAndSection(Venue venue, Section section);
+    Optional<Seat> findBySectionVenueAndId(Venue venue, Long seatId);
     Optional<Seat> findBySectionVenueAndSectionAndId(Venue venue, Section section, Long seatId);
 
     @Transactional

@@ -7,9 +7,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cs203g3.ticketing.receipt.dto.ReceiptRequestDto;
 import com.cs203g3.ticketing.receipt.dto.ReceiptResponseDto;
+import com.cs203g3.ticketing.security.auth.UserDetailsImpl;
 
 @RestController
 public class ReceiptController {
@@ -31,23 +36,24 @@ public class ReceiptController {
         return receiptService.getAllReceipts();
     }
 
-    @GetMapping("/receipts/{id}")
-    public ReceiptResponseDto getReceipt(@PathVariable UUID id) {
-        return receiptService.getReceipt(id);
+    @GetMapping("/receipts/{uuid}")
+    public ReceiptResponseDto getReceipt(@PathVariable UUID uuid) {
+        return receiptService.getReceipt(uuid);
     }
 
-    @DeleteMapping("/receipts/{id}")
-    public void deleteReceipt(@PathVariable UUID id) {
-        receiptService.deleteReceipt(id);
+    @PostMapping("/receipts")
+    public ReceiptResponseDto addReceiptAsCurrentUser(Authentication auth, @RequestBody ReceiptRequestDto newReceiptDto) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        return receiptService.addReceiptAsUserId(userDetails.getId(), newReceiptDto);
     }
 
-    // @PostMapping("/receipts")
-    // public Receipt addReceipt(@RequestBody Receipt newReceipt) {
-    //     return receiptService.addReceipt(newReceipt);
-    // }
+    @PutMapping("/receipts/{uuid}")
+    public ReceiptResponseDto updateReceipt(@PathVariable UUID uuid, @RequestBody ReceiptRequestDto newReceiptDto) {
+        return receiptService.updateReceipt(uuid, newReceiptDto);
+    }
 
-    // @PutMapping("/receipts/{id}")
-    // public Receipt updateReceipt(@PathVariable UUID id, @RequestBody Receipt newReceipt) {
-    //     return receiptService.updateReceipt(id, newReceipt);
-    // }
+    @DeleteMapping("/receipts/{uuid}")
+    public void deleteReceipt(@PathVariable UUID uuid) {
+        receiptService.deleteReceipt(uuid);
+    }
 }
