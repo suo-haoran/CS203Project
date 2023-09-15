@@ -22,7 +22,6 @@ import lombok.Data;
 @Data
 @Entity
 public class Concert {
-    
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -38,6 +37,7 @@ public class Concert {
     @Size(max=255)
     private String artist;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name="venueId")
     private Venue venue;
