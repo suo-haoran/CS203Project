@@ -3,6 +3,7 @@ package com.cs203g3.ticketing.concert;
 
 import java.util.List;
 
+import com.cs203g3.ticketing.concertImage.ConcertImage;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
 import com.cs203g3.ticketing.sectionPrice.SectionPrice;
 import com.cs203g3.ticketing.venue.Venue;
@@ -50,4 +51,7 @@ public class Concert {
     @JsonIgnore
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<SectionPrice> sectionPrices;
+
+    @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
+    private List<ConcertImage> concertImages;
 }
