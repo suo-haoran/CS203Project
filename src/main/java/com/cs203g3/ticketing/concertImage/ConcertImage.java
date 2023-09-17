@@ -25,9 +25,7 @@ public class ConcertImage {
 
     private String name;
 
-    @Lob
-    @Column(length=100000)
-    private byte[] image;
+    private String filePath;
 
     @ManyToOne
     @JoinColumn(name="concertId")

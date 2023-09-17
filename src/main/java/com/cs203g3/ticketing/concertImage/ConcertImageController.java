@@ -1,5 +1,7 @@
 package com.cs203g3.ticketing.concertImage;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
@@ -39,23 +41,20 @@ public class ConcertImageController {
     }
 
     @GetMapping("/{concertImageId}")
-    public ResponseEntity<byte[]> getConcertImage(@PathVariable Long concertId, @PathVariable Long concertImageId) {
+    public ResponseEntity<byte[]> getConcertImage(@PathVariable Long concertId, @PathVariable Long concertImageId) throws IOException {
         ConcertImage concertImage = concertImageService.getConcertImageByConcertAndId(concertId, concertImageId);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + concertImage.getName() + "\"").body(concertImage.getImage());
+        byte[] image = concertImageService.readImageFromFileSystem(concertImage.getName());
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + concertImage.getName() + "\"").body(image);
     }
 
     @PostMapping
     public String addConcertImage(@PathVariable Long concertId, @RequestParam("file") MultipartFile multipartFile) throws IOException {
-        try {
-            concertImageService.addConcertImage(concertId, multipartFile);
-            return "Uploaded " + multipartFile.getOriginalFilename() + " Successfully";
-        } catch (IOException e) {
-            return "Could not upload the file: " + multipartFile.getOriginalFilename() + "!";
-        }
+        concertImageService.addConcertImage(concertId, multipartFile);
+        return "Uploaded " + multipartFile.getOriginalFilename() + " Successfully";
     }
 
     @DeleteMapping("/{concertImageId}")
-    public void deleteConcertImage(Long concertImageId) {
+    public void deleteConcertImage(@PathVariable Long concertImageId) {
         concertImageService.deleteConcertImage(concertImageId);
     }
 }

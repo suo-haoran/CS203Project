@@ -1,8 +1,13 @@
 package com.cs203g3.ticketing.concertImage;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -16,6 +21,13 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 public class ConcertImageService {
     private ConcertImageRepository concertImages;
     private ConcertRepository concerts;
+    private final String TARGET_DIR = "../images/";
+    static {
+        File file = new File("../images");
+        if (!file.exists()) {
+            file.mkdir();
+        }
+    }
 
     public ConcertImageService(ConcertImageRepository cir, ConcertRepository cr) {
         this.concertImages = cir;
@@ -37,7 +49,8 @@ public class ConcertImageService {
 
     public ConcertImage addConcertImage(Long concertId, MultipartFile file) throws IOException {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        ConcertImage newConcertImage = new ConcertImage(null, fileName, file.getBytes(), null);
+        String filePath = writeImageToFileSystem(fileName, file.getBytes());
+        ConcertImage newConcertImage = new ConcertImage(null, fileName, filePath, null);
 
         concerts.findById(concertId).map((concert) -> {
             newConcertImage.setConcert(concert);
@@ -47,7 +60,38 @@ public class ConcertImageService {
         return concertImages.save(newConcertImage);
     }
 
-    public void deleteConcertImage(Long concertImage) {
-        concertImages.deleteById(concertImage);
+    public void deleteConcertImage(Long concertImageId) {
+        concertImages.findById(concertImageId).map(concertImage -> {
+            File file = new File(concertImage.getFilePath());
+            file.delete();
+            return concertImage;
+        }).orElseThrow(() -> new ResourceNotFoundException(ConcertImage.class, concertImageId));
+        
+        concertImages.deleteById(concertImageId);
     }
+
+    public byte[] readImageFromFileSystem(String fileName) throws IOException {
+        File file = new File(TARGET_DIR + fileName);
+        byte[] image = new byte[(int)file.length()];
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            fileInputStream.read(image);
+        } catch (FileNotFoundException e) {
+            throw new ResourceNotFoundException("Image " + fileName + " not found");
+        }
+        return image;
+    }
+
+    private String writeImageToFileSystem(String fileName, byte[] bytes) throws IOException {
+        FileOutputStream fos;
+        File file = new File(TARGET_DIR + fileName);
+        file.createNewFile();
+        fos = new FileOutputStream(file, false);
+        try {
+            fos.write(bytes);
+        } finally {
+            fos.close();
+        }
+        return file.getAbsolutePath();
+    }
+
 }
