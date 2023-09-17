@@ -1,10 +1,7 @@
 package com.cs203g3.ticketing.concertImage;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
