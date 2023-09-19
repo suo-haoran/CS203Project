@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/venues")
 public class VenueController {
@@ -34,12 +36,12 @@ public class VenueController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Venue addVenue(@RequestBody Venue venue) {
+    public Venue addVenue(@Valid @RequestBody Venue venue) {
         return venueService.addVenue(venue);
     }
 
     @PutMapping("/{id}")
-    public Venue updateVenue(@PathVariable Long id, @RequestBody Venue venue) {
+    public Venue updateVenue(@PathVariable Long id, @Valid @RequestBody Venue venue) {
         return venueService.updateVenue(id, venue);
     }
 

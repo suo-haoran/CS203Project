@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -53,6 +54,15 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         body.put("message", ex.getMessage());
         body.put("path", request.getDescription(false));
         return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler({ DataIntegrityViolationException.class })
+    public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("message", ex.getRootCause().getMessage());
+        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler({ RuntimeException.class })

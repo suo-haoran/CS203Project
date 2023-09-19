@@ -6,6 +6,7 @@ import com.cs203g3.ticketing.concert.Concert;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,8 +24,9 @@ public class Venue {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Size(max=255)
+    @NotNull(message="Name must not be null")
+    @Column(unique=true)
+    @Size(min=3, max=255, message="Name length must be between 3 and 255")
     private String name;
 
     @JsonIgnore
