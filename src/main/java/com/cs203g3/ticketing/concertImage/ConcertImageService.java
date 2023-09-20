@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class ConcertImageService {
     }
 
     public ConcertImage addConcertImage(Long concertId, MultipartFile file) throws IOException {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename() + "_" + new Date().toInstant().toEpochMilli());
         String filePath = writeImageToFileSystem(fileName, file.getBytes());
         ConcertImage newConcertImage = new ConcertImage(null, fileName, filePath, null);
 
