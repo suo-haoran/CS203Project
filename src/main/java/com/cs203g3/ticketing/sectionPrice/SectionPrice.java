@@ -30,8 +30,8 @@ public class SectionPrice {
     @JoinColumn(name="sectionId")
     private Section section;
 
-    @NotNull
-    @DecimalMin(value="0.0", inclusive=true)
-    @Digits(integer=6,fraction=2)
+    @NotNull(message="Price must not be null")
+    @DecimalMin(value="0.0", inclusive=true, message="Price must be greater than 0")
+    @Digits(integer=6, fraction=2, message="Invalid price value (<6 digits>.<2 digits> expected)")
     private BigDecimal price;
 }

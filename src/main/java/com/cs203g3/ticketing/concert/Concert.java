@@ -10,6 +10,7 @@ import com.cs203g3.ticketing.venue.Venue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,18 +29,20 @@ public class Concert {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Size(max=255)
+    @NotNull(message="Title must not be null")
+    @Size(min=1, max=255, message="Length of title must be between 1 and 255")
     private String title;
 
-    @NotNull
+    @NotNull(message="Description must not be null")
+    @Size(min=1, message="Description must not be blank")
+    @Column(columnDefinition="TEXT")
     private String description;
 
-    @NotNull
-    @Size(max=255)
+    @NotNull(message="Artist must not be null")
+    @Size(min=1, max=255, message="Length of artist must be between 1 and 255")
     private String artist;
 
-    @NotNull
+    @NotNull(message="Venue must not be null")
     @ManyToOne
     @JoinColumn(name="venueId")
     private Venue venue;
@@ -52,6 +55,7 @@ public class Concert {
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<SectionPrice> sectionPrices;
 
+    @JsonIgnore
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<ConcertImage> concertImages;
 }

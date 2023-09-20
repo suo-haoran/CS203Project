@@ -20,7 +20,7 @@ public class Section {
     private Long id;
 
     @NotNull
-    @Size(max=255)
+    @Size(min=1, max=255, message="Length of name must be between 1 and 255")
     private String name;
 
     @NotNull

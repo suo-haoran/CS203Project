@@ -2,14 +2,20 @@ package com.cs203g3.ticketing.concertSession;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
+import com.cs203g3.ticketing.concertSession.dto.ConcertSessionRequestDto;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 
 @Service
 public class ConcertSessionService {
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     private ConcertSessionRepository concertSessions;
     private ConcertRepository concerts;
@@ -31,23 +37,25 @@ public class ConcertSessionService {
         }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
     }
 
-    public ConcertSession addConcertSession(Long concertId, ConcertSession newConcertSession) {
-        concerts.findById(concertId).map(concert -> {
-            newConcertSession.setConcert(concert);
-            return concert;
-        }).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertId));
+    public ConcertSession addConcertSession(Long concertId, ConcertSessionRequestDto newConcertSessionDto) {
+        Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertId));
+
+        System.out.println(newConcertSessionDto.toString());
+        ConcertSession newConcertSession = modelMapper.map(newConcertSessionDto, ConcertSession.class);
+        newConcertSession.setConcert(concert);
 
         return concertSessions.save(newConcertSession);
     }
 
-    public ConcertSession updateConcertSession(Long concertId, Long sessionId, ConcertSession newConcertSession) {
-        return concerts.findById(concertId).map(concert -> {
-            return concertSessions.findById(sessionId).map(session -> {
-                newConcertSession.setId(sessionId);
-                newConcertSession.setConcert(concert);
-                return concertSessions.save(newConcertSession);
-            }).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, sessionId));
-        }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
+    public ConcertSession updateConcertSession(Long concertId, Long sessionId, ConcertSessionRequestDto newConcertSessionDto) {
+        Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertId));
+        concertSessions.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, sessionId));
+
+        ConcertSession newConcertSession = modelMapper.map(newConcertSessionDto, ConcertSession.class);
+        newConcertSession.setId(sessionId);
+        newConcertSession.setConcert(concert);
+
+        return concertSessions.save(newConcertSession);
     }
 
     public void deleteConcertSession(Long concertId, Long sessionId) {

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cs203g3.ticketing.sectionPrice.dto.SectionPriceRequestDto;
 import com.cs203g3.ticketing.sectionPrice.dto.SectionPriceResponseDto;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/concerts/{concertId}")
 public class SectionPriceController {
@@ -29,12 +31,12 @@ public class SectionPriceController {
     }
 
     @PostMapping("/section/{sectionId}/prices")
-    public SectionPriceResponseDto addSectionPrice(@PathVariable Long concertId, @PathVariable Long sectionId, @RequestBody SectionPriceRequestDto newSectionPriceDto) {
+    public SectionPriceResponseDto addSectionPrice(@PathVariable Long concertId, @PathVariable Long sectionId, @Valid @RequestBody SectionPriceRequestDto newSectionPriceDto) {
         return sectionPriceService.addSectionPrice(concertId, sectionId, newSectionPriceDto);
     }
 
     @PutMapping("/section/{sectionId}/prices")
-    public SectionPriceResponseDto updateSectionPrice(@PathVariable Long concertId, @PathVariable Long sectionId, @RequestBody SectionPriceRequestDto newSectionPriceDto) {
+    public SectionPriceResponseDto updateSectionPrice(@PathVariable Long concertId, @PathVariable Long sectionId, @Valid @RequestBody SectionPriceRequestDto newSectionPriceDto) {
         return sectionPriceService.updateSectionPrice(concertId, sectionId, newSectionPriceDto);
     }
 

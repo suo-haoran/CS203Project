@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cs203g3.ticketing.concertSession.dto.ConcertSessionRequestDto;
+
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/concerts/{concertId}/sessions")
@@ -33,13 +37,13 @@ public class ConcertSessionController {
     }
 
     @PostMapping
-    public ConcertSession addConcertSession(@PathVariable Long concertId, @RequestBody ConcertSession newConcertSession) {
-        return concertSessionService.addConcertSession(concertId, newConcertSession);
+    public ConcertSession addConcertSession(@PathVariable Long concertId, @Valid @RequestBody ConcertSessionRequestDto newConcertSessionDto) {
+        return concertSessionService.addConcertSession(concertId, newConcertSessionDto);
     }
 
     @PutMapping("/{sessionId}")
-    public ConcertSession updateConcertSession(@PathVariable Long concertId, @PathVariable Long sessionId, @RequestBody ConcertSession newConcertSession) {
-        return concertSessionService.updateConcertSession(concertId, sessionId, newConcertSession);
+    public ConcertSession updateConcertSession(@PathVariable Long concertId, @PathVariable Long sessionId, @Valid @RequestBody ConcertSessionRequestDto newConcertSessionDto) {
+        return concertSessionService.updateConcertSession(concertId, sessionId, newConcertSessionDto);
     }
 
     @DeleteMapping("/{sessionId}")

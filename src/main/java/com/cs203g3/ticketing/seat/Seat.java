@@ -25,11 +25,11 @@ public class Seat {
     private Long id;
 
     @NotNull
-    @Size(max=2)
+    @Size(min=1, max=5, message="Length of seatRow must be between 1 and 5")
     private String seatRow;
 
     @NotNull
-    private int seatNumber;
+    private Integer seatNumber;
 
     @NotNull
     @ManyToOne

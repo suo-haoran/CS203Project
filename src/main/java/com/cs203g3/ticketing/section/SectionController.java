@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cs203g3.ticketing.section.dto.SectionIdAndNameDto;
 import com.cs203g3.ticketing.section.dto.SectionRequestDto;
 
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/venues/{venueId}/sections")
@@ -39,12 +41,12 @@ public class SectionController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Section addSection(@PathVariable Long venueId, @RequestBody SectionRequestDto newSectionDto) {
+    public Section addSection(@PathVariable Long venueId, @Valid @RequestBody SectionRequestDto newSectionDto) {
         return sectionService.addSectionByVenueId(venueId, newSectionDto);
     }
 
     @PutMapping("/{sectionId}")
-    public Section updateSection(@PathVariable Long venueId, @PathVariable Long sectionId, @RequestBody SectionRequestDto newSectionDto) {
+    public Section updateSection(@PathVariable Long venueId, @PathVariable Long sectionId, @Valid @RequestBody SectionRequestDto newSectionDto) {
         return sectionService.updateSectionByVenueIdAndSectionId(venueId, sectionId, newSectionDto);
     }
 

@@ -24,10 +24,10 @@ public class ConcertSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @NotNull(message="Datetime must not be null")
     private LocalDateTime datetime;
 
-    @NotNull
+    @NotNull(message="Concert should not be null")
     @ManyToOne
     @JoinColumn(name="concertId")
     private Concert concert;

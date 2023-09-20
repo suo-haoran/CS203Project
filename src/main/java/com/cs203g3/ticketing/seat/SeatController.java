@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cs203g3.ticketing.seat.dto.SeatRequestDto;
 import com.cs203g3.ticketing.seat.dto.SeatResponseDto;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/venues/{venueId}/sections/{sectionId}/seats")
 public class SeatController {
@@ -38,12 +40,12 @@ public class SeatController {
 
     @PostMapping
     @ResponseStatus(code=HttpStatus.CREATED)
-    public Seat addSeat(@PathVariable Long venueId, @PathVariable Long sectionId, @RequestBody SeatRequestDto newSeatDto) {
+    public Seat addSeat(@PathVariable Long venueId, @PathVariable Long sectionId, @Valid @RequestBody SeatRequestDto newSeatDto) {
         return seatService.addSeat(venueId, sectionId, newSeatDto);
     }
 
     @PutMapping("/{seatId}")
-    public Seat updateSeat(@PathVariable Long venueId, @PathVariable Long sectionId, @PathVariable Long seatId, @RequestBody SeatRequestDto newSeatDto) {
+    public Seat updateSeat(@PathVariable Long venueId, @PathVariable Long sectionId, @PathVariable Long seatId, @Valid @RequestBody SeatRequestDto newSeatDto) {
         return seatService.updateSeat(venueId, sectionId, seatId, newSeatDto);
     }
 
