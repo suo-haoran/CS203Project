@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cs203g3.ticketing.concert.dto.ConcertRequestDto;
+import com.cs203g3.ticketing.concert.dto.ConcertResponseDto;
 
 import jakarta.validation.Valid;
 
@@ -28,12 +29,12 @@ public class ConcertController {
     }
 
     @GetMapping
-    public List<Concert> getAllConcerts() {
+    public List<ConcertResponseDto> getAllConcerts() {
         return concertService.getAllConcerts();
     }
 
     @GetMapping("/{id}")
-    public Concert getConcert(@PathVariable Long id) {
+    public ConcertResponseDto getConcert(@PathVariable Long id) {
         return concertService.getConcert(id);
     }
 

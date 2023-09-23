@@ -1,12 +1,14 @@
 package com.cs203g3.ticketing.concert;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.concert.dto.ConcertRequestDto;
+import com.cs203g3.ticketing.concert.dto.ConcertResponseDto;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.venue.Venue;
 import com.cs203g3.ticketing.venue.VenueRepository;
@@ -25,12 +27,16 @@ public class ConcertService {
         this.venues = venues;
     }
 
-    public List<Concert> getAllConcerts() {
-        return concerts.findAll();
+    public List<ConcertResponseDto> getAllConcerts() {
+        return concerts.findAll().stream()
+            .map(concert -> modelMapper.map(concert, ConcertResponseDto.class))
+            .collect(Collectors.toList());
     }
 
-    public Concert getConcert(Long id) {
-        return concerts.findById(id).orElseThrow(() -> new ResourceNotFoundException(Concert.class, id));
+    public ConcertResponseDto getConcert(Long id) {
+        return concerts.findById(id).map(concert -> {
+            return modelMapper.map(concert, ConcertResponseDto.class);
+        }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, id));
     } 
 
     public Concert addConcert(ConcertRequestDto concertRequestDto) {
