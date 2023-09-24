@@ -57,7 +57,6 @@ public class Concert {
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<SectionPrice> sectionPrices;
 
-    @JsonIgnore
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<ConcertImage> concertImages;
 

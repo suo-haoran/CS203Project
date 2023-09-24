@@ -1,6 +1,7 @@
 package com.cs203g3.ticketing.concertImage;
 
 import com.cs203g3.ticketing.concert.Concert;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,5 +28,6 @@ public class ConcertImage {
 
     @ManyToOne
     @JoinColumn(name="concertId")
+    @JsonIgnore
     private Concert concert;
 }
