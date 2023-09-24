@@ -3,6 +3,7 @@ package com.cs203g3.ticketing.concert;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +20,8 @@ import com.cs203g3.ticketing.concert.dto.ConcertResponseDto;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/concerts")
+@RequestMapping("/api/concerts")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class ConcertController {
 
     private ConcertService concertService;

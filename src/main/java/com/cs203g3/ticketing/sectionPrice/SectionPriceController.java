@@ -17,7 +17,7 @@ import com.cs203g3.ticketing.sectionPrice.dto.SectionPriceResponseDto;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/concerts/{concertId}")
+@RequestMapping("/api/concerts/{concertId}")
 public class SectionPriceController {
     private SectionPriceService sectionPriceService;
 

@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/concert/{concertId}/images")
+@RequestMapping("/api/concerts/{concertId}/images")
 public class ConcertImageController {
 
     private ConcertImageService concertImageService;
