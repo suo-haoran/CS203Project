@@ -46,7 +46,7 @@ public class ConcertSessionService {
 
     @Transactional
     public ConcertSession addConcertSessionAndGenerateTickets(Long concertId, ConcertSessionRequestDto newConcertSessionDto) {
-        Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertId));
+        Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
 
         ConcertSession newConcertSession = modelMapper.map(newConcertSessionDto, ConcertSession.class);
         newConcertSession.setConcert(concert);

@@ -51,20 +51,20 @@ public class ReceiptService {
             .orElseThrow(() -> new ResourceNotFoundException(Receipt.class, uuid));
     }
 
-    public ReceiptResponseDto addReceipt(ReceiptRequestDto newReceiptDto) {
+    public Receipt addReceipt(ReceiptRequestDto newReceiptDto) {
         Long userId = newReceiptDto.getUserId();
         User user = users.findById(userId).orElseThrow(() -> new ResourceNotFoundException(User.class, userId));
 
         Receipt newReceipt = modelMapper.map(newReceiptDto, Receipt.class);
         newReceipt.setUser(user);
-        receipts.save(newReceipt);
-
-        return modelMapper.map(newReceipt, ReceiptResponseDto.class);
+        return receipts.save(newReceipt);
     }
 
     public ReceiptResponseDto addReceiptAsUserId(Long userId, ReceiptRequestDto newReceiptDto) {
         newReceiptDto.setUserId(userId);
-        return this.addReceipt(newReceiptDto);
+        Receipt newReceipt = this.addReceipt(newReceiptDto);
+
+        return modelMapper.map(newReceipt, ReceiptResponseDto.class);
     }
 
     public ReceiptResponseDto updateReceipt(UUID uuid, ReceiptRequestDto newReceiptDto) {
