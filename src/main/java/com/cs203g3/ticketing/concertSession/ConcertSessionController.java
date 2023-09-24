@@ -38,7 +38,7 @@ public class ConcertSessionController {
 
     @PostMapping
     public ConcertSession addConcertSession(@PathVariable Long concertId, @Valid @RequestBody ConcertSessionRequestDto newConcertSessionDto) {
-        return concertSessionService.addConcertSession(concertId, newConcertSessionDto);
+        return concertSessionService.addConcertSessionAndGenerateTickets(concertId, newConcertSessionDto);
     }
 
     @PutMapping("/{sessionId}")

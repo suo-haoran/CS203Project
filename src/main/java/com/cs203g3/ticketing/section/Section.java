@@ -1,13 +1,19 @@
 package com.cs203g3.ticketing.section;
 
-import com.cs203g3.ticketing.venue.Venue;
+import java.util.List;
 
+import com.cs203g3.ticketing.seat.Seat;
+import com.cs203g3.ticketing.venue.Venue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -27,4 +33,8 @@ public class Section {
     @ManyToOne
     @JoinColumn(name="venueId")
     private Venue venue;
+
+    @JsonIgnore
+    @OneToMany(mappedBy="section", cascade=CascadeType.ALL)
+    private List<Seat> seats;
 }

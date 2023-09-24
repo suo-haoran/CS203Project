@@ -10,6 +10,9 @@ import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
 import com.cs203g3.ticketing.concertSession.dto.ConcertSessionRequestDto;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
+import com.cs203g3.ticketing.ticket.TicketService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class ConcertSessionService {
@@ -20,9 +23,13 @@ public class ConcertSessionService {
     private ConcertSessionRepository concertSessions;
     private ConcertRepository concerts;
 
-    public ConcertSessionService(ConcertSessionRepository concertSessions, ConcertRepository concerts) {
+    private TicketService ticketService;
+
+    public ConcertSessionService(ConcertSessionRepository concertSessions, ConcertRepository concerts, TicketService ticketService) {
         this.concertSessions = concertSessions;
         this.concerts = concerts;
+
+        this.ticketService = ticketService;
     }
 
     public List<ConcertSession> getAllConcertSessionsByConcertId(Long concertId) {
@@ -37,14 +44,17 @@ public class ConcertSessionService {
         }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
     }
 
-    public ConcertSession addConcertSession(Long concertId, ConcertSessionRequestDto newConcertSessionDto) {
+    @Transactional
+    public ConcertSession addConcertSessionAndGenerateTickets(Long concertId, ConcertSessionRequestDto newConcertSessionDto) {
         Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertId));
 
-        System.out.println(newConcertSessionDto.toString());
         ConcertSession newConcertSession = modelMapper.map(newConcertSessionDto, ConcertSession.class);
         newConcertSession.setConcert(concert);
+        concertSessions.save(newConcertSession);
 
-        return concertSessions.save(newConcertSession);
+        ticketService.generateTicketsForSession(newConcertSession);
+
+        return newConcertSession;
     }
 
     public ConcertSession updateConcertSession(Long concertId, Long sessionId, ConcertSessionRequestDto newConcertSessionDto) {

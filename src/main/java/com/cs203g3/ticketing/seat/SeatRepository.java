@@ -11,6 +11,7 @@ import com.cs203g3.ticketing.venue.Venue;
 import jakarta.transaction.Transactional;
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {
+    List<Seat> findAllBySectionVenue(Venue venue);
     List<Seat> findAllBySectionVenueAndSection(Venue venue, Section section);
     Optional<Seat> findBySectionVenueAndId(Venue venue, Long seatId);
     Optional<Seat> findBySectionVenueAndSectionAndId(Venue venue, Section section, Long seatId);

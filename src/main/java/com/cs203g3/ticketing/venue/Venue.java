@@ -3,6 +3,7 @@ package com.cs203g3.ticketing.venue;
 import java.util.List;
 
 import com.cs203g3.ticketing.concert.Concert;
+import com.cs203g3.ticketing.section.Section;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -30,6 +31,10 @@ public class Venue {
     private String name;
 
     @JsonIgnore
-    @OneToMany(mappedBy="venue", cascade = CascadeType.ALL)
-    private List<Concert> concert;
+    @OneToMany(mappedBy="venue", cascade=CascadeType.ALL)
+    private List<Concert> concerts;
+
+    @JsonIgnore
+    @OneToMany(mappedBy="venue", cascade=CascadeType.ALL)
+    private List<Section> sections;
 }

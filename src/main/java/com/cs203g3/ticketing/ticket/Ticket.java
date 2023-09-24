@@ -15,14 +15,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(uniqueConstraints = {
     @UniqueConstraint(name = "UniqueSessionAndSeat", columnNames = { "concertSessionId", "seatId" })
 })
@@ -41,8 +39,12 @@ public class Ticket {
     @JoinColumn(name = "concertSessionId")
     private ConcertSession concertSession;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "receiptId")
     private Receipt receipt;
+
+    public Ticket(Seat seat, ConcertSession session) {
+        this.seat = seat;
+        this.concertSession = session;
+    }
 }

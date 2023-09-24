@@ -1,5 +1,6 @@
 package com.cs203g3.ticketing.ticket;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -68,15 +69,25 @@ public class TicketService {
     public TicketResponseDto addTicket(TicketRequestDto newTicketDto) {
         Long sessionId = newTicketDto.getConcertSessionId();
         Long seatId = newTicketDto.getSeatId();
-        UUID receiptId = newTicketDto.getReceiptId();
 
         ConcertSession session = sessions.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, sessionId));
         Seat seat = seats.findBySectionVenueAndId(session.getConcert().getVenue(), seatId)
             .orElseThrow(() -> new ResourceNotFoundException(String.format("Seat with ID #%d either does not exist or does not belong to Venue of Concert Session with ID #%d", seatId, sessionId)));
-        Receipt receipt = receipts.findById(receiptId).orElseThrow(() -> new ResourceNotFoundException(Receipt.class, receiptId));
 
-        Ticket newTicket = new Ticket(null, seat, session, receipt);
+        Ticket newTicket = new Ticket(seat, session);
         newTicket = tickets.save(newTicket);
         return modelMapper.map(newTicket, TicketResponseDto.class);
+    }
+
+    // Returns number of tickets generated
+    public Integer generateTicketsForSession(ConcertSession session) {
+        List<Ticket> ticketsToGenerate = new ArrayList<>();
+
+        List<Seat> venueSeats = seats.findAllBySectionVenue(session.getConcert().getVenue());
+        venueSeats.forEach(seat -> {
+            ticketsToGenerate.add(new Ticket(seat, session));
+        });
+
+        return tickets.saveAll(ticketsToGenerate).size();
     }
 }
