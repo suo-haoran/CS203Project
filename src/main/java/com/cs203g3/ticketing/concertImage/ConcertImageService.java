@@ -91,7 +91,7 @@ public class ConcertImageService {
         } finally {
             fos.close();
         }
-        return file.getAbsolutePath();
+        return file.getPath();
     }
 
 }
