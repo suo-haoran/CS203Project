@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class PaymentRequestDto {
+public class PaymentMetadataDto {
 
     @NotNull(message="userId cannot be null")
     private Long userId; // Here, is it possible for Stripe/ourselves to verify this ?
@@ -26,8 +26,8 @@ public class PaymentRequestDto {
     @Max(value=5, message="ticketsBought must not be more than 5")
     private Integer ticketsBought;
 
-    @NotNull(message="amountPaid cannot be null")
-    @DecimalMin(value="0.0", inclusive=true, message="amountPaid must be greater than 0")
-    @Digits(integer=6, fraction=2, message="Invalid price value (<6 digits>.<2 digits> expected)")
-    private BigDecimal amountPaid;
+    // @NotNull(message="amountPaid cannot be null")
+    // @DecimalMin(value="0.0", inclusive=true, message="amountPaid must be greater than 0")
+    // @Digits(integer=6, fraction=2, message="Invalid price value (<6 digits>.<2 digits> expected)")
+    // private BigDecimal amountPaid;
 }

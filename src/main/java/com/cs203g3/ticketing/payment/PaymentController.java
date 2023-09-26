@@ -4,9 +4,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cs203g3.ticketing.payment.dto.PaymentRequestDto;
+import jakarta.servlet.http.HttpServletRequest;
 
-import jakarta.validation.Valid;
 
 @RestController
 public class PaymentController {
@@ -18,7 +17,7 @@ public class PaymentController {
     }
 
     @PostMapping("/payment-completed")
-    public void processPaymentCompleted(@Valid @RequestBody PaymentRequestDto paymentDto) {
-        paymentService.processPaymentCompleted(paymentDto);
+    public void processPaymentCompleted(HttpServletRequest req, @RequestBody String stripePayload) {
+        paymentService.processPaymentCompleted(req.getHeader("Stripe-Signature"), stripePayload);
     }
 }
