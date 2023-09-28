@@ -1,9 +1,9 @@
-package com.cs203g3.ticketing.venue;
+package com.cs203g3.ticketing.category;
 
 import java.util.List;
 
-import com.cs203g3.ticketing.category.Category;
-import com.cs203g3.ticketing.concert.Concert;
+import com.cs203g3.ticketing.section.Section;
+import com.cs203g3.ticketing.venue.Venue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -12,6 +12,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -19,8 +21,7 @@ import lombok.Data;
 
 @Data
 @Entity
-public class Venue {
-    
+public class Category {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -30,11 +31,12 @@ public class Venue {
     @Size(min=3, max=255, message="Name length must be between 3 and 255")
     private String name;
 
-    @JsonIgnore
-    @OneToMany(mappedBy="venue", cascade=CascadeType.ALL)
-    private List<Concert> concerts;
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name="venueId")
+    private Venue venue;
 
     @JsonIgnore
-    @OneToMany(mappedBy="venue", cascade=CascadeType.ALL)
-    private List<Category> categories;
+    @OneToMany(mappedBy="category", cascade=CascadeType.ALL)
+    private List<Section> sections;
 }

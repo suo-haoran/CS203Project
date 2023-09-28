@@ -2,8 +2,8 @@ package com.cs203g3.ticketing.section;
 
 import java.util.List;
 
+import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.seat.Seat;
-import com.cs203g3.ticketing.venue.Venue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -31,8 +31,8 @@ public class Section {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name="venueId")
-    private Venue venue;
+    @JoinColumn(name="categoryId")
+    private Category category;
 
     @JsonIgnore
     @OneToMany(mappedBy="section", cascade=CascadeType.ALL)

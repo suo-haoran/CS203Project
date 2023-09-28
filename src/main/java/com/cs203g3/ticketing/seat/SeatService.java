@@ -33,25 +33,25 @@ public class SeatService {
 
     public List<SeatResponseDto> getAllSeatsByVenueIdAndSectionId(Long venueId, Long sectionId) {
         Venue venue = venues.findById(venueId).orElseThrow(() -> new ResourceNotFoundException(Venue.class, venueId));
-        Section section = sections.findByVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
+        Section section = sections.findByCategoryVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
 
-        return seats.findAllBySectionVenueAndSection(venue, section).stream().map(seat -> {
+        return seats.findAllBySectionCategoryVenueAndSection(venue, section).stream().map(seat -> {
             return modelMapper.map(seat, SeatResponseDto.class);
         }).collect(Collectors.toList());
     }
 
     public SeatResponseDto getSeatByVenueIdAndSectionIdAndSeatId(Long venueId, Long sectionId, Long seatId) {
         Venue venue = venues.findById(venueId).orElseThrow(() -> new ResourceNotFoundException(Venue.class, venueId));
-        Section section = sections.findByVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
+        Section section = sections.findByCategoryVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
 
-        return seats.findBySectionVenueAndSectionAndId(venue, section, seatId)
+        return seats.findBySectionCategoryVenueAndSectionAndId(venue, section, seatId)
             .map(seat -> modelMapper.map(seat, SeatResponseDto.class))
             .orElseThrow(() -> new ResourceNotFoundException(Seat.class, seatId));
     } 
 
     public Seat addSeat(Long venueId, Long sectionId, SeatRequestDto newSeatDto) {
         Venue venue = venues.findById(venueId).orElseThrow(() -> new ResourceNotFoundException(Venue.class, venueId));
-        Section section = sections.findByVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
+        Section section = sections.findByCategoryVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
         
         Seat newSeat = modelMapper.map(newSeatDto, Seat.class);
         newSeat.setSection(section);
@@ -60,8 +60,8 @@ public class SeatService {
 
     public Seat updateSeat(Long venueId, Long sectionId, Long seatId, SeatRequestDto newSeatDto) {
         Venue venue = venues.findById(venueId).orElseThrow(() -> new ResourceNotFoundException(Venue.class, venueId));
-        Section section = sections.findByVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
-        seats.findBySectionVenueAndSectionAndId(venue, section, seatId).orElseThrow(() -> new ResourceNotFoundException(Seat.class, seatId));
+        Section section = sections.findByCategoryVenueAndId(venue, sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
+        seats.findBySectionCategoryVenueAndSectionAndId(venue, section, seatId).orElseThrow(() -> new ResourceNotFoundException(Seat.class, seatId));
         
         Seat newSeat = modelMapper.map(newSeatDto, Seat.class);
         newSeat.setId(seatId);
@@ -70,6 +70,6 @@ public class SeatService {
     }
 
     public void deleteSeat(Long venueId, Long sectionId, Long seatId) {
-        seats.deleteBySectionVenueIdAndSectionIdAndId(venueId, sectionId, seatId);
+        seats.deleteBySectionCategoryVenueIdAndSectionIdAndId(venueId, sectionId, seatId);
     }
 }

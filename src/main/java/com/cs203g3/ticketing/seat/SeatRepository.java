@@ -11,11 +11,11 @@ import com.cs203g3.ticketing.venue.Venue;
 import jakarta.transaction.Transactional;
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {
-    List<Seat> findAllBySectionVenue(Venue venue);
-    List<Seat> findAllBySectionVenueAndSection(Venue venue, Section section);
-    Optional<Seat> findBySectionVenueAndId(Venue venue, Long seatId);
-    Optional<Seat> findBySectionVenueAndSectionAndId(Venue venue, Section section, Long seatId);
+    List<Seat> findAllBySectionCategoryVenue(Venue venue);
+    List<Seat> findAllBySectionCategoryVenueAndSection(Venue venue, Section section);
+    Optional<Seat> findBySectionCategoryVenueAndId(Venue venue, Long seatId);
+    Optional<Seat> findBySectionCategoryVenueAndSectionAndId(Venue venue, Section section, Long seatId);
 
     @Transactional
-    void deleteBySectionVenueIdAndSectionIdAndId(Long venueId, Long sectionId, Long seatId);
+    void deleteBySectionCategoryVenueIdAndSectionIdAndId(Long venueId, Long sectionId, Long seatId);
 }

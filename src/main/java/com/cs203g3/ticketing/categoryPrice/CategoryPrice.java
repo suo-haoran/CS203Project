@@ -1,10 +1,10 @@
-package com.cs203g3.ticketing.sectionPrice;
+package com.cs203g3.ticketing.categoryPrice;
 
 import java.math.BigDecimal;
 
+import com.cs203g3.ticketing.category.Category;
+import com.cs203g3.ticketing.categoryPrice.key.CategoryPriceKey;
 import com.cs203g3.ticketing.concert.Concert;
-import com.cs203g3.ticketing.section.Section;
-import com.cs203g3.ticketing.sectionPrice.key.SectionPriceKey;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -18,8 +18,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@IdClass(SectionPriceKey.class)
-public class SectionPrice {
+@IdClass(CategoryPriceKey.class)
+public class CategoryPrice {
     @Id
     @ManyToOne
     @JoinColumn(name="concertId")
@@ -27,8 +27,8 @@ public class SectionPrice {
 
     @Id
     @ManyToOne
-    @JoinColumn(name="sectionId")
-    private Section section;
+    @JoinColumn(name="categoryId")
+    private Category category;
 
     @NotNull(message="Price must not be null")
     @DecimalMin(value="0.0", inclusive=true, message="Price must be greater than 0")

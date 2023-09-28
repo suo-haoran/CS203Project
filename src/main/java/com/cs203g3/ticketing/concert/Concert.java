@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.cs203g3.ticketing.categoryPrice.CategoryPrice;
 import com.cs203g3.ticketing.concertImage.ConcertImage;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
-import com.cs203g3.ticketing.sectionPrice.SectionPrice;
 import com.cs203g3.ticketing.venue.Venue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -55,7 +55,7 @@ public class Concert {
 
     @JsonIgnore
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
-    private List<SectionPrice> sectionPrices;
+    private List<CategoryPrice> categoryPrices;
 
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<ConcertImage> concertImages;

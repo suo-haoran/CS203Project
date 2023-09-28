@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import com.cs203g3.ticketing.receipt.Receipt;
 import com.cs203g3.ticketing.receipt.dto.ReceiptResponseDto;
+import com.cs203g3.ticketing.section.Section;
+import com.cs203g3.ticketing.section.dto.SectionResponseDto;
 
 @SpringBootApplication
 @EnableJpaRepositories
@@ -21,6 +23,9 @@ public class TicketingApplication {
 
 		modelMapper.typeMap(Receipt.class, ReceiptResponseDto.class)
 			.addMapping(src -> src.getUser().getUsername(), ReceiptResponseDto::setUsername);
+
+		modelMapper.typeMap(Section.class, SectionResponseDto.class)
+			.addMapping(src -> src.getCategory().getName(), SectionResponseDto::setCategory);
 
 		return modelMapper;
 	}

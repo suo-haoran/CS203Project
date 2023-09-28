@@ -71,7 +71,7 @@ public class TicketService {
         Long seatId = newTicketDto.getSeatId();
 
         ConcertSession session = sessions.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, sessionId));
-        Seat seat = seats.findBySectionVenueAndId(session.getConcert().getVenue(), seatId)
+        Seat seat = seats.findBySectionCategoryVenueAndId(session.getConcert().getVenue(), seatId)
             .orElseThrow(() -> new ResourceNotFoundException(String.format("Seat with ID #%d either does not exist or does not belong to Venue of Concert Session with ID #%d", seatId, sessionId)));
 
         Ticket newTicket = new Ticket(seat, session);
@@ -83,7 +83,7 @@ public class TicketService {
     public Integer generateTicketsForSession(ConcertSession session) {
         List<Ticket> ticketsToGenerate = new ArrayList<>();
 
-        List<Seat> venueSeats = seats.findAllBySectionVenue(session.getConcert().getVenue());
+        List<Seat> venueSeats = seats.findAllBySectionCategoryVenue(session.getConcert().getVenue());
         venueSeats.forEach(seat -> {
             ticketsToGenerate.add(new Ticket(seat, session));
         });
