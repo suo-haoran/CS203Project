@@ -3,7 +3,6 @@ package com.cs203g3.ticketing.concertSession;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.concert.Concert;
@@ -17,7 +16,6 @@ import jakarta.transaction.Transactional;
 @Service
 public class ConcertSessionService {
 
-    @Autowired
     private ModelMapper modelMapper;
 
     private ConcertSessionRepository concertSessions;
@@ -25,7 +23,9 @@ public class ConcertSessionService {
 
     private TicketService ticketService;
 
-    public ConcertSessionService(ConcertSessionRepository concertSessions, ConcertRepository concerts, TicketService ticketService) {
+    public ConcertSessionService(ModelMapper modelMapper, ConcertSessionRepository concertSessions, ConcertRepository concerts, TicketService ticketService) {
+        this.modelMapper = modelMapper;
+
         this.concertSessions = concertSessions;
         this.concerts = concerts;
 

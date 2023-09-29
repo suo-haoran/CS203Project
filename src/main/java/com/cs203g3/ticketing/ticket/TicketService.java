@@ -6,7 +6,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.concert.Concert;
@@ -26,7 +25,6 @@ import com.cs203g3.ticketing.ticket.dto.TicketResponseWithoutSessionDto;
 @Service
 public class TicketService {
 
-    @Autowired
     private ModelMapper modelMapper;
 
     private TicketRepository tickets;
@@ -35,7 +33,9 @@ public class TicketService {
     private ReceiptRepository receipts;
     private SeatRepository seats;
 
-    public TicketService(TicketRepository tickets, ConcertRepository concerts, ConcertSessionRepository sessions, ReceiptRepository receipts, SeatRepository seats) {
+    public TicketService(ModelMapper modelMapper, TicketRepository tickets, ConcertRepository concerts, ConcertSessionRepository sessions, ReceiptRepository receipts, SeatRepository seats) {
+        this.modelMapper = modelMapper;
+
         this.tickets = tickets;
         this.concerts = concerts;
         this.sessions = sessions;

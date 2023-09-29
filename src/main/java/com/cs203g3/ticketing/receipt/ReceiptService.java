@@ -5,8 +5,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
@@ -18,13 +16,14 @@ import com.cs203g3.ticketing.user.UserRepository;
 @Service
 public class ReceiptService {
     
-    @Autowired
     private ModelMapper modelMapper;
 
     private ReceiptRepository receipts;
     private UserRepository users;
 
-    public ReceiptService(ReceiptRepository receipts, UserRepository users) {
+    public ReceiptService(ModelMapper modelMapper, ReceiptRepository receipts, UserRepository users) {
+        this.modelMapper = modelMapper;
+
         this.receipts = receipts;
         this.users = users;
     }

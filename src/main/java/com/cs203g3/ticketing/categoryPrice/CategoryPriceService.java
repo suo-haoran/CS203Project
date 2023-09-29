@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.category.Category;
@@ -19,14 +18,15 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 @Service
 public class CategoryPriceService {
 
-    @Autowired
     private ModelMapper modelMapper;
     
     private CategoryPriceRepository categoryPrices;
     private ConcertRepository concerts;
     private CategoryRepository categories;
 
-    public CategoryPriceService(CategoryPriceRepository categoryPrices, ConcertRepository concerts, CategoryRepository categories) {
+    public CategoryPriceService(ModelMapper modelMapper, CategoryPriceRepository categoryPrices, ConcertRepository concerts, CategoryRepository categories) {
+        this.modelMapper = modelMapper;
+
         this.categoryPrices = categoryPrices;
         this.concerts = concerts;
         this.categories = categories;

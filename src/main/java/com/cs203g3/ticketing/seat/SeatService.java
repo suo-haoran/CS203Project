@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
@@ -18,14 +17,15 @@ import com.cs203g3.ticketing.venue.VenueRepository;
 @Service
 public class SeatService {
 
-    @Autowired
     private ModelMapper modelMapper;
     
     private SeatRepository seats;
     private VenueRepository venues;
     private SectionRepository sections;
 
-    public SeatService(SeatRepository seats, VenueRepository venues, SectionRepository sections) {
+    public SeatService(ModelMapper modelMapper, SeatRepository seats, VenueRepository venues, SectionRepository sections) {
+        this.modelMapper = modelMapper;
+
         this.seats = seats;
         this.venues = venues;
         this.sections = sections;

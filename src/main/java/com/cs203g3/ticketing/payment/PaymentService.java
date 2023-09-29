@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -28,17 +27,18 @@ import jakarta.transaction.Transactional;
 @Service
 public class PaymentService {
 
-    @Autowired
-    ModelMapper modelMapper;
-
     @Value("${cs203.app.stripeEndpointSecret}")
     private String endpointSecret;
+
+    private ModelMapper modelMapper;
 
     private TicketRepository tickets;
 
     private ReceiptService receiptService;
 
-    public PaymentService(TicketRepository tickets, ReceiptService rs) {
+    public PaymentService(ModelMapper modelMapper, TicketRepository tickets, ReceiptService rs) {
+        this.modelMapper = modelMapper;
+
         this.tickets = tickets;
         this.receiptService = rs;
     }
