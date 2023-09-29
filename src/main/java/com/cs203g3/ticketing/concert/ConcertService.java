@@ -16,13 +16,14 @@ import com.cs203g3.ticketing.venue.VenueRepository;
 @Service
 public class ConcertService {
 
-    @Autowired
     private ModelMapper modelMapper;
 
     private ConcertRepository concerts;
     private VenueRepository venues;
 
-    public ConcertService(ConcertRepository concerts, VenueRepository venues) {
+    public ConcertService(ModelMapper modelMapper, ConcertRepository concerts, VenueRepository venues) {
+        this.modelMapper = modelMapper;
+
         this.concerts = concerts;
         this.venues = venues;
     }
