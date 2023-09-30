@@ -46,8 +46,14 @@ dependencies {
 
 	testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	testImplementation("com.h2database:h2:2.2.224")
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.bootRun {
+	environment("spring.profiles.active", "dev")
 }
