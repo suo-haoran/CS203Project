@@ -8,6 +8,7 @@ import java.util.List;
 import com.cs203g3.ticketing.categoryPrice.CategoryPrice;
 import com.cs203g3.ticketing.concertImage.ConcertImage;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
+import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.cs203g3.ticketing.venue.Venue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -23,10 +24,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
-public class Concert {
+@EqualsAndHashCode(callSuper = true)
+public class Concert extends BaseEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;

@@ -3,6 +3,7 @@ package com.cs203g3.ticketing.ticket;
 import java.util.UUID;
 
 import com.cs203g3.ticketing.concertSession.ConcertSession;
+import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.cs203g3.ticketing.receipt.Receipt;
 import com.cs203g3.ticketing.seat.Seat;
 
@@ -16,6 +17,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -24,7 +26,8 @@ import lombok.NoArgsConstructor;
 @Table(uniqueConstraints = {
     @UniqueConstraint(name = "UniqueSessionAndSeat", columnNames = { "concertSessionId", "seatId" })
 })
-public class Ticket {
+@EqualsAndHashCode(callSuper = true)
+public class Ticket extends BaseEntity {
     @Id 
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

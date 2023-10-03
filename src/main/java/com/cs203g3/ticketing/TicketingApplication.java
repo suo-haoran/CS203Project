@@ -5,6 +5,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import com.cs203g3.ticketing.receipt.Receipt;
@@ -14,6 +15,7 @@ import com.cs203g3.ticketing.section.dto.SectionResponseDto;
 
 @SpringBootApplication
 @EnableJpaRepositories
+@EnableJpaAuditing
 public class TicketingApplication {
 
 	@Bean

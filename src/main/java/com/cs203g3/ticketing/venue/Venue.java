@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.concert.Concert;
+import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -16,10 +17,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
-public class Venue {
+@EqualsAndHashCode(callSuper = true)
+public class Venue extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

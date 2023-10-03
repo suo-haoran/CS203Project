@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.cs203g3.ticketing.ticket.Ticket;
 import com.cs203g3.ticketing.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,10 +20,12 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
-public class Receipt {
+@EqualsAndHashCode(callSuper = true)
+public class Receipt extends BaseEntity {
     @Id 
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uuid;

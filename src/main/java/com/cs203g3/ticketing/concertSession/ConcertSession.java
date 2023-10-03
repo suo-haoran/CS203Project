@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.cs203g3.ticketing.concert.Concert;
+import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.cs203g3.ticketing.ticket.Ticket;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -16,10 +17,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
-public class ConcertSession {
+@EqualsAndHashCode(callSuper = true)
+public class ConcertSession extends BaseEntity {
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

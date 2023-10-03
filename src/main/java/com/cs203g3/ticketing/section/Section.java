@@ -3,6 +3,7 @@ package com.cs203g3.ticketing.section;
 import java.util.List;
 
 import com.cs203g3.ticketing.category.Category;
+import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.cs203g3.ticketing.seat.Seat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -17,10 +18,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
-public class Section {
+@EqualsAndHashCode(callSuper = true)
+public class Section extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -3,6 +3,10 @@ package com.cs203g3.ticketing.user;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.cs203g3.ticketing.persistence.BaseEntity;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,18 +22,22 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 
 @Entity
-@Table(name = "user", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "username"),
-        @UniqueConstraint(columnNames = "email")
-})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+@Table(name = "users",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "UniqueUsername", columnNames = "username"),
+        @UniqueConstraint(name = "UniqueEmail", columnNames = "email")
+    }
+)
+@EqualsAndHashCode(callSuper = true)
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

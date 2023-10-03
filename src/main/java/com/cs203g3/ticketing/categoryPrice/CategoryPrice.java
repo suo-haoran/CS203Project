@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.categoryPrice.key.CategoryPriceKey;
 import com.cs203g3.ticketing.concert.Concert;
+import com.cs203g3.ticketing.persistence.BaseEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -15,11 +16,13 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
 @IdClass(CategoryPriceKey.class)
-public class CategoryPrice {
+@EqualsAndHashCode(callSuper = true)
+public class CategoryPrice extends BaseEntity {
     @Id
     @ManyToOne
     @JoinColumn(name="concertId")
