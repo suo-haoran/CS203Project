@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users",
+@Table(name = "user",
     uniqueConstraints = {
         @UniqueConstraint(name = "UniqueUsername", columnNames = "username"),
         @UniqueConstraint(name = "UniqueEmail", columnNames = "email")
@@ -66,6 +66,6 @@ public class User extends BaseEntity {
     private Date dob;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 }

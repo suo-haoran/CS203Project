@@ -1,7 +1,7 @@
 USE ticketingdb;
 
 -- Insert roles.
-insert into roles(name) values ('ROLE_USER'), ('ROLE_ADMIN');
+insert into role(name) values ('ROLE_USER'), ('ROLE_ADMIN');
 
 -- Setup user
 -- User Password: pwd
@@ -10,7 +10,7 @@ INSERT INTO user (username, password, email, phone, country_of_residences, dob) 
 ('admin2', '$2a$12$CUGValkqjn0vte..M9wx0.cnnTgd4IH4k7JgGc5Wg8ZhSE05VhKtO', 'a2@admin.net', '88882222', 'Singapore', CURRENT_TIMESTAMP),
 ('user1', '$2a$12$CUGValkqjn0vte..M9wx0.cnnTgd4IH4k7JgGc5Wg8ZhSE05VhKtO', 'u1@user.net', '99991111', 'Singapore', CURRENT_TIMESTAMP);
 
-INSERT INTO user_roles(user_id, role_id) VALUES (1, 2), (2, 2), (3, 1);
+INSERT INTO user_role(user_id, role_id) VALUES (1, 2), (2, 2), (3, 1);
 
 
 -- Mock Business Data Setup
