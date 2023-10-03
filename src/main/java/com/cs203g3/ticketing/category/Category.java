@@ -2,6 +2,7 @@ package com.cs203g3.ticketing.category;
 
 import java.util.List;
 
+import com.cs203g3.ticketing.activeBallotCategory.ActiveBallotCategory;
 import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.cs203g3.ticketing.section.Section;
 import com.cs203g3.ticketing.venue.Venue;
@@ -42,4 +43,8 @@ public class Category extends BaseEntity {
     @JsonIgnore
     @OneToMany(mappedBy="category", cascade=CascadeType.ALL)
     private List<Section> sections;
+
+    @JsonIgnore
+    @OneToMany(mappedBy="category", cascade=CascadeType.ALL)
+    private List<ActiveBallotCategory> activeBallotCategories;
 }

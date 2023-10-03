@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.cs203g3.ticketing.activeBallotCategory.ActiveBallotCategory;
 import com.cs203g3.ticketing.categoryPrice.CategoryPrice;
 import com.cs203g3.ticketing.concertImage.ConcertImage;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
@@ -51,6 +52,10 @@ public class Concert extends BaseEntity {
     @ManyToOne
     @JoinColumn(name="venueId")
     private Venue venue;
+
+    @JsonIgnore
+    @OneToMany(mappedBy="concert")
+    private List<ActiveBallotCategory> activeBallotCategories;
 
     @JsonIgnore
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
