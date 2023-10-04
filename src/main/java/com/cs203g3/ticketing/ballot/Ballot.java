@@ -16,12 +16,14 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(uniqueConstraints = {
     @UniqueConstraint(name = "UniqueUserConcertCategoryIdentifier", columnNames = { "userId", "concertId", "categoryId" })
 })
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 public class Ballot extends BaseEntity {
     @Id
