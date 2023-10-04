@@ -57,7 +57,12 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/auth/**").permitAll()
+                auth.requestMatchers(HttpMethod.POST, "/api/concerts/*/categories/*/activeBallots").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/concerts/*/categories/*/activeBallots").hasRole("ADMIN")
+
+                    .requestMatchers(HttpMethod.GET, "/api/concerts/*/categories/*/ballots").hasRole("ADMIN")
+
+                    .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/test/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/concerts/**").permitAll()
                     .anyRequest().authenticated()
