@@ -8,6 +8,7 @@ import com.cs203g3.ticketing.persistence.BaseEntity;
 import com.cs203g3.ticketing.ticket.Ticket;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,7 +37,7 @@ public class ConcertSession extends BaseEntity {
     private Concert concert;
 
     @JsonIgnore
-    @OneToMany(mappedBy="concertSession")
+    @OneToMany(mappedBy="concertSession", cascade = CascadeType.ALL)
     private List<Ticket> tickets;
 }
 

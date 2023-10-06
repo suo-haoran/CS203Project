@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/concerts/{concertId}/images")
+@RequestMapping("/v1/concerts/{concertId}/images")
 public class ConcertImageController {
 
     private ConcertImageService concertImageService;
@@ -31,7 +31,7 @@ public class ConcertImageController {
         return concertImageService.getConcertImageByConcert(concertId)
             .map(concertImage -> {
                 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/api/concert/" + concertId + "/images/")
+                    .path("/v1/concerts/" + concertId + "/images/")
                     .path(concertImage.getId().toString())
                     .toUriString();
                 return fileDownloadUri;

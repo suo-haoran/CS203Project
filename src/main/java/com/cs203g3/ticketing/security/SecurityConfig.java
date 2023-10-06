@@ -57,14 +57,36 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
-                auth.requestMatchers(HttpMethod.POST, "/api/concerts/*/categories/*/activeBallots").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/concerts/*/categories/*/activeBallots").hasRole("ADMIN")
+                auth.requestMatchers(HttpMethod.POST, "/v1/concerts").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/v1/concerts/*").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/v1/concerts/*").hasRole("ADMIN")
 
-                    .requestMatchers(HttpMethod.GET, "/api/concerts/*/categories/*/ballots").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/v1/concerts/*/categories/*/activeBallots").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/v1/concerts/*/categories/*/activeBallots").hasRole("ADMIN")
 
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/test/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/concerts/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/v1/concerts/*/categories/*/ballots").hasRole("ADMIN")
+
+                    .requestMatchers(HttpMethod.POST, "/v1/concerts/*/categories/*/prices").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/v1/concerts/*/categories/*/prices").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/v1/concerts/*/categories/*/prices").hasRole("ADMIN")
+
+                    .requestMatchers(HttpMethod.POST, "/v1/concerts/*/images").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/v1/concerts/*/images").hasRole("ADMIN")
+
+                    .requestMatchers(HttpMethod.POST, "/v1/concerts/*/sessions").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/v1/concerts/*/sessions/*").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/v1/concerts/*/sessions/*").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/v1/concerts/*/sessions/*/tickets").hasRole("ADMIN")
+
+                    .requestMatchers(HttpMethod.GET, "/v1/receipts").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/v1/receipts/*").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/v1/receipts/*").hasRole("ADMIN")
+
+                    .requestMatchers(HttpMethod.POST, "/v1/tickets").hasRole("ADMIN")
+
+                    .requestMatchers("/v1/auth/**").permitAll()
+                    .requestMatchers("/v1/test/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/v1/concerts/**").permitAll()
                     .anyRequest().authenticated()
             );
         http.authenticationProvider(authenticationProvider());

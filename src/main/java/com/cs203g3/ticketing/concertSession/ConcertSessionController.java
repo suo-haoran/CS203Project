@@ -17,7 +17,7 @@ import jakarta.validation.Valid;
 
 
 @RestController
-@RequestMapping("/concerts/{concertId}/sessions")
+@RequestMapping("/v1/concerts/{concertId}/sessions")
 public class ConcertSessionController {
     
     private ConcertSessionService concertSessionService;

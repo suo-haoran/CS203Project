@@ -16,7 +16,7 @@ import com.cs203g3.ticketing.security.auth.UserDetailsImpl;
 
 
 @RestController
-@RequestMapping("/api/concerts/{concertId}/categories/{categoryId}/ballots")
+@RequestMapping("/v1/concerts/{concertId}/categories/{categoryId}/ballots")
 public class BallotController {
 
     private BallotService ballotService;

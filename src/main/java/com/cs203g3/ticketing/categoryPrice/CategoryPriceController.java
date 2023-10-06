@@ -17,7 +17,7 @@ import com.cs203g3.ticketing.categoryPrice.dto.CategoryPriceResponseDto;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/concerts/{concertId}")
+@RequestMapping("/v1/concerts/{concertId}")
 public class CategoryPriceController {
     private CategoryPriceService categoryPriceService;
 
@@ -30,22 +30,22 @@ public class CategoryPriceController {
         return categoryPriceService.getAllCategoryPricesByConcertId(concertId);
     }
 
-    @GetMapping("/category/{categoryId}/prices")
+    @GetMapping("/categories/{categoryId}/prices")
     public CategoryPriceResponseDto getCategoryPriceByConcertIdAndCategoryId(@PathVariable Long concertId, @PathVariable Long categoryId) {
         return categoryPriceService.getCategoryPriceByConcertIdAndCategoryId(concertId, categoryId);
     }
 
-    @PostMapping("/category/{categoryId}/prices")
+    @PostMapping("/categories/{categoryId}/prices")
     public CategoryPriceResponseDto addCategoryPrice(@PathVariable Long concertId, @PathVariable Long categoryId, @Valid @RequestBody CategoryPriceRequestDto newCategoryPriceDto) {
         return categoryPriceService.addCategoryPrice(concertId, categoryId, newCategoryPriceDto);
     }
 
-    @PutMapping("/category/{categoryId}/prices")
+    @PutMapping("/categories/{categoryId}/prices")
     public CategoryPriceResponseDto updateCategoryPrice(@PathVariable Long concertId, @PathVariable Long categoryId, @Valid @RequestBody CategoryPriceRequestDto newCategoryPriceDto) {
         return categoryPriceService.updateCategoryPrice(concertId, categoryId, newCategoryPriceDto);
     }
 
-    @DeleteMapping("/category/{categoryId}/prices")
+    @DeleteMapping("/categories/{categoryId}/prices")
     public void deleteCategoryPrice(@PathVariable Long concertId, @PathVariable Long categoryId) {
         categoryPriceService.deleteCategoryPrice(concertId, categoryId);
     }

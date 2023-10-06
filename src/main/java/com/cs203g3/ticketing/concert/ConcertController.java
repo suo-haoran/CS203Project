@@ -20,7 +20,7 @@ import com.cs203g3.ticketing.concert.dto.ConcertResponseDto;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/concerts")
+@RequestMapping("/v1/concerts")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ConcertController {
 

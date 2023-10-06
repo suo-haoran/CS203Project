@@ -16,7 +16,7 @@ public class PaymentController {
         this.paymentService = ps;
     }
 
-    @PostMapping("/payment-completed")
+    @PostMapping("/v1/payment-completed")
     public void processPaymentCompleted(HttpServletRequest req, @RequestBody String stripePayload) {
         paymentService.processPaymentCompleted(req.getHeader("Stripe-Signature"), stripePayload);
     }
