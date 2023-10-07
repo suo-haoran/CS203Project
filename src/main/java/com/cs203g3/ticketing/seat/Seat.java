@@ -13,11 +13,15 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(uniqueConstraints = {
     @UniqueConstraint(name = "UniqueSectionSeatIdentifier", columnNames = { "sectionId", "seatRow", "seatNumber" })
 })

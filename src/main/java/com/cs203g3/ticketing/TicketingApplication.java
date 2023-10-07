@@ -18,8 +18,8 @@ import com.cs203g3.ticketing.section.dto.SectionResponseDto;
 @EnableJpaAuditing
 public class TicketingApplication {
 
-	@Bean
-	public ModelMapper modelMapper() {
+    @Bean
+    ModelMapper modelMapper() {
 		ModelMapper modelMapper = new ModelMapper();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
