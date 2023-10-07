@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket</title>
+</head>
+<body>
+    <img style="z-index: 0;" src="../images/ticket-template.png" alt="ticket">
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white; font-size:90px; top: 32px; left: 70px; rotate: 90deg;"
+    th:text="${rowNumber}"></h1> <!--row number-->
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white; font-size:90px; top: 420px; left: 70px; rotate: 90deg;"
+    th:text="${seatNumber}"></h1> <!--seat number-->
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white; font-size:43px; top: 217px; left: 1520px;"
+    th:text="${username}"></h1> <!--name-->
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white; font-size:43px ; top: 293px ; left: 1625px;"
+    th:text="${userId}"></h1> <!--customer id-->
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white; font-size:70px; top: 40px; left: 450px;"
+    th:text="${title}"></h1> <!--title-->
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white;  font-size:45px; top: 250px; left: 120px; rotate: 90deg;"
+    th:text="${title}"></h1> <!--also title but the side one-->
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white; font-size:90px; top: 375px; left: 450px;"
+    th:text="${price}"></h1> <!--price-->
+    <h1 style="z-index: 1; position: absolute; font-family: Arial, Helvetica, sans-serif; color: white; font-size:28px; top: 260px; left: 460px;"
+    th:text="${dateTime} at ${location}"></h1> <!--location, date time details-->
+</body>
+</html>

@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.cs203g3.ticketing.persistence.BaseEntity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

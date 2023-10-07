@@ -28,10 +28,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-mail")
 
 	implementation("com.google.code.gson:gson:2.10.1")
 	implementation("com.stripe:stripe-java:23.6.0")
-
+	implementation("org.thymeleaf:thymeleaf:3.1.2.RELEASE")
+	implementation("org.xhtmlrenderer:flying-saucer-pdf:9.3.1")
 	implementation("org.modelmapper:modelmapper:3.1.1")
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
 	
