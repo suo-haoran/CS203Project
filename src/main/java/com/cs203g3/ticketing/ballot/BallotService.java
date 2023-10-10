@@ -1,5 +1,6 @@
 package com.cs203g3.ticketing.ballot;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,9 +39,13 @@ public class BallotService {
         this.users = users;
     }
 
-    public List<BallotResponseDto> getAllBallotsByConcertIdAndCategoryId(Long concertId, Long categoryId) {
+    public void verifyValidConcertIdAndCategoryId(Long concertId, Long categoryId) {
         concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
         categories.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException(Category.class, concertId));
+    }
+
+    public List<BallotResponseDto> getAllBallotsByConcertIdAndCategoryId(Long concertId, Long categoryId) {
+        verifyValidConcertIdAndCategoryId(concertId, categoryId);
 
         return ballots.findAllByConcertIdAndCategoryId(concertId, categoryId).stream()
             .map(ballot -> modelMapper.map(ballot, BallotResponseDto.class))
@@ -67,5 +72,18 @@ public class BallotService {
 
             throw ex;
         }
+    }
+
+    public void randomiseBallotForConcertIdAndCategoryId(Long concertId, Long categoryId) {
+        verifyValidConcertIdAndCategoryId(concertId, categoryId);
+
+        List<Ballot> receivedBallots = ballots.findAllByConcertIdAndCategoryId(concertId, categoryId);
+        Collections.shuffle(receivedBallots);
+
+        for (int i = 0; i < receivedBallots.size(); i++) {
+            receivedBallots.get(i).setBallotResult(Long.valueOf(i));
+        }
+
+        ballots.saveAll(receivedBallots);
     }
 }

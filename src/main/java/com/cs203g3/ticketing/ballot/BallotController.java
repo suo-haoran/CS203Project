@@ -36,4 +36,9 @@ public class BallotController {
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
         return ballotService.addBallot(userDetails, concertId, categoryId);
     }
+
+    @PostMapping("/randomise")
+    public void randomiseBallotsByConcertIdAndCategoryId(@PathVariable Long concertId, @PathVariable Long categoryId) {
+        ballotService.randomiseBallotForConcertIdAndCategoryId(concertId, categoryId);
+    }
 }
