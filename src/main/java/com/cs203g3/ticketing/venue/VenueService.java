@@ -23,19 +23,4 @@ public class VenueService {
     public Venue getVenue(Long id) {
         return venues.findById(id).map(venue -> venue).orElseThrow(() -> new ResourceNotFoundException(Venue.class, id));
     }
-
-    public Venue addVenue(Venue newVenue) {
-        return venues.save(newVenue);
-    }
-
-    public Venue updateVenue(Long id, Venue newVenue) {
-        return venues.findById(id).map(venue -> {
-            newVenue.setId(id);
-            return venues.save(newVenue);
-        }).orElseThrow(() -> new ResourceNotFoundException(Venue.class, id));
-    }
-
-    public void deleteVenue(Long id) {
-        venues.deleteById(id);
-    }
 }
