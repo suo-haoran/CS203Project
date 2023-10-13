@@ -32,6 +32,12 @@ public class EmailService {
         this.pdfGenerator = pdfGenerator;
     }
 
+    public void sendBallotingConfirmationEmail(User user, ConcertSession session) {
+        String message = String.format(EmailTemplate.BALLOT_JOIN, user.getUsername(),
+                session.getConcert().getTitle());
+        sendSimpleEmail(user.getEmail(), EmailTemplate.BALLOT_JOIN_TITLE, message);
+    }
+
     public void sendBallotingFailedEmail(User user, ConcertSession session) {
         String message = String.format(EmailTemplate.BALLOT_FAILED, user.getUsername(),
                 session.getConcert().getTitle());

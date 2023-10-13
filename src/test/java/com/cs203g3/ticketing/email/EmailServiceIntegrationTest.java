@@ -33,7 +33,7 @@ import jakarta.mail.MessagingException;
 public class EmailServiceIntegrationTest {
 
     @Autowired
-    private EmailService emailService; 
+    private EmailService emailService;
 
     private final User USER = new User(
             1L, "testuser1", "", "ticketingwinners@gmail.com", "12312312", "SG", new Date(), null);
@@ -72,5 +72,10 @@ public class EmailServiceIntegrationTest {
     @Test
     public void sendBallotingFailedMessage_Valid() {
         emailService.sendBallotingFailedEmail(USER, CONCERT_SESSION);
+    }
+
+    @Test
+    public void sendBallotingConfirmationMessage_Valid() {
+        emailService.sendBallotingConfirmationEmail(USER, CONCERT_SESSION);
     }
 }

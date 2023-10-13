@@ -7,6 +7,13 @@ public final class EmailTemplate {
             + "Please find the attached ticket and receipt for your purchase.\n\n"
             + "Regards,\n"
             + "Ticketing Winners";
+
+    public static final String BALLOT_JOIN_TITLE = "Ballot Selection";
+    public static final String BALLOT_JOIN = "Dear %s,\n\n"
+            + "Thank you for joining the ballot for the event: %s.\n\n"
+            + "We will be sending out another email to inform you the result.\n\n"
+            + "Regards,\n"
+            + "Ticketing Winners";
     
     public static final String BALLOT_SUCCESS_TITLE = "RE: Ballot Selection Result";
     public static final String BALLOT_SUCCESS = "Dear %s,\n\n"
