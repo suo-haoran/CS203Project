@@ -21,9 +21,10 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 public class ConcertImageService {
     private ConcertImageRepository concertImages;
     private ConcertRepository concerts;
-    private final String TARGET_DIR = "../images/";
+    private static final String TARGET_DIR = "./images/";
+
     static {
-        File file = new File("../images");
+        File file = new File(TARGET_DIR);
         if (!file.exists()) {
             file.mkdir();
         }
