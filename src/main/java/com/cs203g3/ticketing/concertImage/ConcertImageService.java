@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
+import com.cs203g3.ticketing.exception.ResourceAlreadyExistsException;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 
 @Service
@@ -84,9 +85,13 @@ public class ConcertImageService {
     private String writeImageToFileSystem(String fileName, byte[] bytes) throws IOException {
         FileOutputStream fos;
         File file = new File(TARGET_DIR + fileName);
-        file.createNewFile();
+
+        if (file.exists()) {
+            throw new ResourceAlreadyExistsException(fileName + " already exists");
+        }
         fos = new FileOutputStream(file, false);
         try {
+            file.createNewFile();
             fos.write(bytes);
         } finally {
             fos.close();

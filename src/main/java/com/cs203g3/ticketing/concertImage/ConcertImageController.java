@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,26 +30,32 @@ public class ConcertImageController {
     @GetMapping
     public List<String> getFileList(@PathVariable Long concertId) {
         return concertImageService.getConcertImageByConcert(concertId)
-            .map(concertImage -> {
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/v1/concerts/" + concertId + "/images/")
-                    .path(concertImage.getId().toString())
-                    .toUriString();
-                return fileDownloadUri;
-            }).toList();
+                .map(concertImage -> {
+                    String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                            .path("/v1/concerts/" + concertId + "/images/")
+                            .path(concertImage.getId().toString())
+                            .toUriString();
+                    return fileDownloadUri;
+                }).toList();
     }
 
     @GetMapping("/{concertImageId}")
-    public ResponseEntity<byte[]> getConcertImage(@PathVariable Long concertId, @PathVariable Long concertImageId) throws IOException {
+    public ResponseEntity<byte[]> getConcertImage(@PathVariable Long concertId, @PathVariable Long concertImageId)
+            throws IOException {
+
         ConcertImage concertImage = concertImageService.getConcertImageByConcertAndId(concertId, concertImageId);
         byte[] image = concertImageService.readImageFromFileSystem(concertImage.getName());
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+
     }
 
     @PostMapping
-    public String addConcertImage(@PathVariable Long concertId, @RequestParam("file") MultipartFile multipartFile) throws IOException {
-        concertImageService.addConcertImage(concertId, multipartFile);
-        return "Uploaded " + multipartFile.getOriginalFilename() + " Successfully";
+    public ResponseEntity<?> addConcertImage(@PathVariable Long concertId,
+            @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        ConcertImage image = concertImageService.addConcertImage(concertId, multipartFile);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "/v1/concerts/" + concertId + "/images/" + image.getId());
+        return new ResponseEntity<String>("", headers, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{concertImageId}")
