@@ -19,6 +19,7 @@ import com.cs203g3.ticketing.security.jwt.dto.JwtResponse;
 import com.cs203g3.ticketing.user.ERole;
 import com.cs203g3.ticketing.user.Role;
 import com.cs203g3.ticketing.user.RoleRepository;
+import com.cs203g3.ticketing.user.RoleService;
 import com.cs203g3.ticketing.user.User;
 import com.cs203g3.ticketing.user.UserRepository;
 import com.cs203g3.ticketing.user.dto.LoginRequest;
@@ -28,26 +29,34 @@ import com.cs203g3.ticketing.user.dto.SignupRequest;
 public class AuthService {
     private AuthenticationManager authenticationManager;
     private UserRepository userRepository;
-    private RoleRepository roleRepository;
+    private RoleService roleService;
     private PasswordEncoder encoder;
     private JwtUtils jwtUtils;
 
     public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository,
-            RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
+            RoleService roleService, PasswordEncoder encoder, JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
+        this.roleService = roleService;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
     }
 
+    /**
+     * Authenticate a user
+     * @param loginRequest contains the user's credentials
+     * @return a JwtResponse containing the JWT token and user details
+     */
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
+        // authenticate user
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // generate JWT token
         String jwt = jwtUtils.generateJwtToken(authentication);
 
+        // get user details
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
@@ -60,7 +69,13 @@ public class AuthService {
                 roles);
     }
 
-    public MessageResponse registerUser(SignupRequest signUpRequest) {
+    /**
+     * Register a new user
+     * 
+     * @param signUpRequest contains the user's details
+     * @return the newly created user
+     */
+    public User registerUser(SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new UsernameTakenException(signUpRequest.getUsername());
         }
@@ -69,30 +84,16 @@ public class AuthService {
             throw new EmailTakenException(signUpRequest.getEmail());
         }
 
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new ResourceNotFoundException(Role.class, (long) ERole.ROLE_USER.ordinal()));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(roleStr -> {
-                Role role = null;
-                if (roleStr.equals("user")) {
-                    role = roleRepository.findByName(ERole.ROLE_ADMIN)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                } else {
-                    role = roleRepository.findByName(ERole.ROLE_USER)
-                            .orElseThrow(
-                                    () -> new ResourceNotFoundException(Role.class, (long) ERole.ROLE_USER.ordinal()));
-                }
-                roles.add(role);
-            });
+        if (signUpRequest.getRoles() == null || signUpRequest.getRoles().isEmpty()) {
+            throw new IllegalArgumentException("Roles cannot be empty");
         }
 
-        // Create new user's account
-        User user = new User(
+        // get role objects from role names.
+        Set<Role> roles = signUpRequest.getRoles().stream()
+                .map(roleService::getRoleByName)
+                .collect(Collectors.toSet());
+
+        return userRepository.save(new User(
                 null,
                 signUpRequest.getUsername(),
                 encoder.encode(signUpRequest.getPassword()),
@@ -100,9 +101,7 @@ public class AuthService {
                 signUpRequest.getPhone(),
                 signUpRequest.getCountryOfResidences(),
                 signUpRequest.getDob(),
-                roles);
-        userRepository.save(user);
-
-        return new MessageResponse("User registered successfully!");
+                roles));
     }
+
 }

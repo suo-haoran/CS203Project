@@ -31,5 +31,5 @@ public class SignupRequest {
 
     private Date dob;
 
-    private Set<String> role;
+    private Set<String> roles;
 }
