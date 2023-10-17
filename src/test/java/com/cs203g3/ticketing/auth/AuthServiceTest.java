@@ -35,6 +35,7 @@ import com.cs203g3.ticketing.security.jwt.dto.JwtResponse;
 import com.cs203g3.ticketing.user.ERole;
 import com.cs203g3.ticketing.user.Role;
 import com.cs203g3.ticketing.user.RoleRepository;
+import com.cs203g3.ticketing.user.RoleService;
 import com.cs203g3.ticketing.user.User;
 import com.cs203g3.ticketing.user.UserRepository;
 import com.cs203g3.ticketing.user.dto.LoginRequest;
@@ -50,6 +51,9 @@ public class AuthServiceTest {
 
     @Mock
     private RoleRepository roles;
+
+    @Mock
+    private RoleService roleService;
 
     @Mock
     private UserDetailsServiceImpl userDetailsService;
@@ -128,14 +132,14 @@ public class AuthServiceTest {
 
         when(users.existsByUsername(signupRequest.getUsername())).thenReturn(false);
         when(users.existsByEmail(signupRequest.getEmail())).thenReturn(false);
-        when(roles.findByName(ERole.ROLE_ADMIN)).thenReturn(Optional.of(ADMIN));
+        when(roleService.getRoleByName("admin")).thenReturn(ADMIN);
         when(users.save(any(User.class))).thenReturn(USER);
 
         User user = authService.registerUser(signupRequest);
         assertTrue(user.getId().equals(USER.getId()));
         verify(users).existsByUsername(signupRequest.getUsername());
         verify(users).existsByEmail(signupRequest.getEmail());
-        verify(roles).findByName(ERole.ROLE_ADMIN);
+        verify(roleService).getRoleByName("admin");
         verify(users).save(any(User.class));
     }
 
