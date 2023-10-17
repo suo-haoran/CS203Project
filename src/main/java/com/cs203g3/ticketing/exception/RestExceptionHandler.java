@@ -20,6 +20,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.cs203g3.ticketing.email.EmailException;
+
 import jakarta.servlet.http.HttpServletResponse;
 
 @ControllerAdvice

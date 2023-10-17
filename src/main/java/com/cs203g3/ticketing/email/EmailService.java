@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.cs203g3.ticketing.concertSession.ConcertSession;
 import com.cs203g3.ticketing.email.htmlToPdf.PdfGenerator;
-import com.cs203g3.ticketing.exception.EmailException;
 import com.cs203g3.ticketing.receipt.Receipt;
 import com.cs203g3.ticketing.ticket.Ticket;
 import com.cs203g3.ticketing.user.User;

@@ -1,4 +1,4 @@
-package com.cs203g3.ticketing.exception;
+package com.cs203g3.ticketing.email;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
