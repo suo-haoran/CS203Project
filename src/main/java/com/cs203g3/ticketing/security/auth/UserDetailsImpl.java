@@ -13,12 +13,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * UserDetailsImpl
  */
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
     private Long id;
