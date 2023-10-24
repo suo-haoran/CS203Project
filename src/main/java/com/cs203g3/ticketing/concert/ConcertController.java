@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,8 +32,12 @@ public class ConcertController {
     }
 
     @GetMapping
-    public List<ConcertResponseDto> getAllConcerts() {
-        return concertService.getAllConcerts();
+    public List<ConcertResponseDto> getAllConcerts(@RequestParam(required=false) boolean showAll) {
+        // showAll param can only be used by Admins
+        // will display all Concerts, even those with no related ConcertSessions
+        return showAll
+            ? concertService.getAllConcerts()
+            : concertService.getAllConcertsBySessionsNotNull();
     }
 
     @GetMapping("/{id}")
