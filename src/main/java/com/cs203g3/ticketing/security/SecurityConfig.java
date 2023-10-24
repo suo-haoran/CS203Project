@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 import com.cs203g3.ticketing.security.auth.UserDetailsServiceImpl;
 import com.cs203g3.ticketing.security.jwt.AuthEntryPointJwt;
@@ -57,7 +58,8 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
-                auth.requestMatchers(HttpMethod.POST, "/v1/concerts").hasRole("ADMIN")
+                auth.requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/v1/concerts\\?showAll.*")).hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/v1/concerts").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/v1/concerts/*").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.DELETE, "/v1/concerts/*").hasRole("ADMIN")
 

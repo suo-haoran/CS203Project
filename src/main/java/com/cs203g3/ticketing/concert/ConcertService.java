@@ -33,6 +33,12 @@ public class ConcertService {
             .collect(Collectors.toList());
     }
 
+    public List<ConcertResponseDto> getAllConcertsBySessionsNotNull() {
+        return concerts.findAllBySessionsNotNull().stream()
+            .map(concert -> modelMapper.map(concert, ConcertResponseDto.class))
+            .collect(Collectors.toList());
+    }
+
     public ConcertResponseDto getConcert(Long id) {
         return concerts.findById(id).map(concert -> {
             return modelMapper.map(concert, ConcertResponseDto.class);
