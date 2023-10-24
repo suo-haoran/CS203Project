@@ -1,5 +1,6 @@
 package com.cs203g3.ticketing.email.htmlToPdf;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
@@ -26,8 +27,14 @@ public class PdfGenerator {
 
     private TemplateEngine templateEngine;
 
-    @Value("${pdf.directory}")
-    private String pdfDirectory;
+    private static final String PDF_DIRECTORY = "./pdfs/";
+
+    static {
+        File file = new File(PDF_DIRECTORY);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+    }
 
     public PdfGenerator() {
         this.templateEngine = new TemplateEngine();
@@ -46,7 +53,7 @@ public class PdfGenerator {
         variables.put("session", session);
 
         String ticketTemplate = parseThymeleafTemplate("ticket-template", variables);
-        String ticketPdfPath = pdfDirectory + "ticket.pdf";
+        String ticketPdfPath = PDF_DIRECTORY + "ticket_" + tickets[0].getId() + "" +".pdf";
         writeHtmlToPdf(ticketTemplate, ticketPdfPath);
 
         variables.clear();
@@ -56,7 +63,7 @@ public class PdfGenerator {
         // variables.put("concert", concert);
 
         String receiptTemplate = parseThymeleafTemplate("receipt-template", variables);
-        String receiptPdfPath = pdfDirectory + "receipt.pdf";
+        String receiptPdfPath = PDF_DIRECTORY + "receipt" + receipt.getUuid() + ".pdf";
         writeHtmlToPdf(receiptTemplate, receiptPdfPath);
         return new String[] { ticketPdfPath, receiptPdfPath };
     }
