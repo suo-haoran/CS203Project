@@ -7,7 +7,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
-public class SignupRequest {
+public class SignupRequestDto {
     @NotBlank
     @Size(min = 3, max = 20)
     private String username;
@@ -30,6 +30,4 @@ public class SignupRequest {
     private String countryOfResidences;
 
     private Date dob;
-
-    private Set<String> roles;
 }

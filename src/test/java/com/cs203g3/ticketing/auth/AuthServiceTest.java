@@ -1,5 +1,7 @@
 package com.cs203g3.ticketing.auth;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,8 +40,9 @@ import com.cs203g3.ticketing.user.RoleRepository;
 import com.cs203g3.ticketing.user.RoleService;
 import com.cs203g3.ticketing.user.User;
 import com.cs203g3.ticketing.user.UserRepository;
-import com.cs203g3.ticketing.user.dto.LoginRequest;
-import com.cs203g3.ticketing.user.dto.SignupRequest;
+import com.cs203g3.ticketing.user.dto.LoginRequestDto;
+import com.cs203g3.ticketing.user.dto.SignupRequestDto;
+import com.cs203g3.ticketing.user.dto.SignupResponseDto;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
@@ -64,19 +67,22 @@ public class AuthServiceTest {
     @Mock
     private BCryptPasswordEncoder encoder;
 
+    @Mock
+    private ModelMapper modelMapper;
+
     @InjectMocks
     private AuthService authService;
 
-    private final Role ADMIN = new Role(1L, ERole.ROLE_ADMIN, null);
+    private final Role ROLE_USER = new Role(1L, ERole.ROLE_USER, null);
 
     private final User USER = new User(
             1L, "username", "valid_password", "ticketingwinners@gmail.com", "12312312", "SG", new Date(),
-            Set.of(ADMIN));
+            Set.of(ROLE_USER));
 
     @Test
     public void login_Valid_Success() {
         // Setup LoginRequest and Mock Authentication object
-        LoginRequest loginRequest = new LoginRequest();
+        LoginRequestDto loginRequest = new LoginRequestDto();
 
         loginRequest.setUsername("username");
         loginRequest.setPassword("valid_password");
@@ -97,7 +103,7 @@ public class AuthServiceTest {
 
         JwtResponse jwtResponse = authService.authenticateUser(loginRequest);
 
-        assertTrue(jwtResponse.getToken().equals(expectedToken));
+        assertEquals(jwtResponse.getToken(), expectedToken);
         verify(authenticationManager).authenticate(usernamePasswordAuthenticationToken);
         verify(jwtUtils).generateJwtToken(authentication);
         verify(authentication).getPrincipal();
@@ -106,7 +112,7 @@ public class AuthServiceTest {
     @Test
     public void login_InvalidCredentials_Failure() {
         // Setup invalid LoginRequest
-        LoginRequest loginRequest = new LoginRequest();
+        LoginRequestDto loginRequest = new LoginRequestDto();
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(), loginRequest.getPassword());
 
@@ -125,28 +131,28 @@ public class AuthServiceTest {
     @Test
     public void signup_Valid_Success() {
         // Setup valid SignupRequest
-        SignupRequest signupRequest = new SignupRequest();
+        SignupRequestDto signupRequest = new SignupRequestDto();
         signupRequest.setUsername("valid_new_username");
         signupRequest.setPassword("valid_new_password");
-        signupRequest.setRoles(Set.of("admin"));
 
         when(users.existsByUsername(signupRequest.getUsername())).thenReturn(false);
         when(users.existsByEmail(signupRequest.getEmail())).thenReturn(false);
-        when(roleService.getRoleByName("admin")).thenReturn(ADMIN);
+        when(roleService.getRoleByName("ROLE_USER")).thenReturn(ROLE_USER);
         when(users.save(any(User.class))).thenReturn(USER);
+        when(modelMapper.map(USER, SignupResponseDto.class)).thenReturn(new SignupResponseDto());
 
-        User user = authService.registerUser(signupRequest);
-        assertTrue(user.getId().equals(USER.getId()));
+        SignupResponseDto responseDto = authService.registerUser(signupRequest);
+        assertNotNull(responseDto);
         verify(users).existsByUsername(signupRequest.getUsername());
         verify(users).existsByEmail(signupRequest.getEmail());
-        verify(roleService).getRoleByName("admin");
+        verify(roleService).getRoleByName("ROLE_USER");
         verify(users).save(any(User.class));
     }
 
     @Test
     public void signup_UsernameExists_Failure() {
         // Setup invalid username (already exists)
-        SignupRequest signupRequest = new SignupRequest();
+        SignupRequestDto signupRequest = new SignupRequestDto();
         signupRequest.setUsername("duplicate_username");
 
         // Assume that username already exists
@@ -162,7 +168,7 @@ public class AuthServiceTest {
     @Test
     public void signup_EmailExists_Failure() {
         // Setup invalid email (already exists)
-        SignupRequest signupRequest = new SignupRequest();
+        SignupRequestDto signupRequest = new SignupRequestDto();
         signupRequest.setEmail("duplicate_email@gmail.com");
 
         // Assume that username does not exist
@@ -172,25 +178,6 @@ public class AuthServiceTest {
 
         // Verify that authService.registerUser() throws EmailTakenException
         assertThrowsExactly(EmailTakenException.class, () -> {
-            authService.registerUser(signupRequest);
-        });
-        verify(users).existsByUsername(signupRequest.getUsername());
-        verify(users).existsByEmail(signupRequest.getEmail());
-
-    }
-
-    @Test
-    public void signup_NoRole_Failure() {
-        // Setup invalid role (null)
-        SignupRequest signupRequest = new SignupRequest();
-
-        // Assume that username does not exist
-        when(users.existsByUsername(signupRequest.getUsername())).thenReturn(false);
-        // Assume that email already exists
-        when(users.existsByEmail(signupRequest.getEmail())).thenReturn(false);
-
-        // Verify that authService.registerUser() throws IllegalArgumentException
-        assertThrowsExactly(IllegalArgumentException.class, () -> {
             authService.registerUser(signupRequest);
         });
         verify(users).existsByUsername(signupRequest.getUsername());

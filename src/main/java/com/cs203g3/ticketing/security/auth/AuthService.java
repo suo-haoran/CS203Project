@@ -1,10 +1,10 @@
 package com.cs203g3.ticketing.security.auth;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,18 +12,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.cs203g3.ticketing.exception.ResourceNotFoundException;
-import com.cs203g3.ticketing.security.auth.dto.MessageResponse;
 import com.cs203g3.ticketing.security.jwt.JwtUtils;
 import com.cs203g3.ticketing.security.jwt.dto.JwtResponse;
-import com.cs203g3.ticketing.user.ERole;
 import com.cs203g3.ticketing.user.Role;
-import com.cs203g3.ticketing.user.RoleRepository;
 import com.cs203g3.ticketing.user.RoleService;
 import com.cs203g3.ticketing.user.User;
 import com.cs203g3.ticketing.user.UserRepository;
-import com.cs203g3.ticketing.user.dto.LoginRequest;
-import com.cs203g3.ticketing.user.dto.SignupRequest;
+import com.cs203g3.ticketing.user.dto.LoginRequestDto;
+import com.cs203g3.ticketing.user.dto.SignupRequestDto;
+import com.cs203g3.ticketing.user.dto.SignupResponseDto;
 
 @Service
 public class AuthService {
@@ -32,14 +29,16 @@ public class AuthService {
     private RoleService roleService;
     private PasswordEncoder encoder;
     private JwtUtils jwtUtils;
+    private ModelMapper modelMapper;
 
     public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository,
-            RoleService roleService, PasswordEncoder encoder, JwtUtils jwtUtils) {
+            RoleService roleService, PasswordEncoder encoder, JwtUtils jwtUtils, ModelMapper modelMapper) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleService = roleService;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
+        this.modelMapper = modelMapper;
     }
 
     /**
@@ -47,7 +46,7 @@ public class AuthService {
      * @param loginRequest contains the user's credentials
      * @return a JwtResponse containing the JWT token and user details
      */
-    public JwtResponse authenticateUser(LoginRequest loginRequest) {
+    public JwtResponse authenticateUser(LoginRequestDto loginRequest) {
         // authenticate user
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -75,7 +74,7 @@ public class AuthService {
      * @param signUpRequest contains the user's details
      * @return the newly created user
      */
-    public User registerUser(SignupRequest signUpRequest) {
+    public SignupResponseDto registerUser(SignupRequestDto signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new UsernameTakenException(signUpRequest.getUsername());
         }
@@ -84,16 +83,10 @@ public class AuthService {
             throw new EmailTakenException(signUpRequest.getEmail());
         }
 
-        if (signUpRequest.getRoles() == null || signUpRequest.getRoles().isEmpty()) {
-            throw new IllegalArgumentException("Roles cannot be empty");
-        }
-
         // get role objects from role names.
-        Set<Role> roles = signUpRequest.getRoles().stream()
-                .map(roleService::getRoleByName)
-                .collect(Collectors.toSet());
+        Set<Role> roles = Set.of(roleService.getRoleByName("ROLE_USER"));
 
-        return userRepository.save(new User(
+        User user = userRepository.save(new User(
                 null,
                 signUpRequest.getUsername(),
                 encoder.encode(signUpRequest.getPassword()),
@@ -102,6 +95,8 @@ public class AuthService {
                 signUpRequest.getCountryOfResidences(),
                 signUpRequest.getDob(),
                 roles));
+                
+        return modelMapper.map(user, SignupResponseDto.class);
     }
 
 }
