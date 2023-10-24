@@ -13,7 +13,7 @@ import com.cs203g3.ticketing.section.dto.SectionResponseDto;
 
 
 @RestController
-@RequestMapping("/venues/{venueId}/sections")
+@RequestMapping("/v1/venues/{venueId}/sections")
 public class SectionController {
     
     private SectionService sectionService;
