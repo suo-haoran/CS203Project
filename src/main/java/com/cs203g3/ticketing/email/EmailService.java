@@ -1,6 +1,7 @@
 package com.cs203g3.ticketing.email;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -10,7 +11,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import com.cs203g3.ticketing.concertSession.ConcertSession;
-import com.cs203g3.ticketing.email.htmlToPdf.PdfGenerator;
+import com.cs203g3.ticketing.email.attachments.EmailAttachmentService;
 import com.cs203g3.ticketing.receipt.Receipt;
 import com.cs203g3.ticketing.ticket.Ticket;
 import com.cs203g3.ticketing.user.User;
@@ -21,14 +22,14 @@ import jakarta.mail.internet.MimeMessage;
 @Component
 public class EmailService {
     private JavaMailSender mailSender;
-    private PdfGenerator pdfGenerator;
+    private EmailAttachmentService attachmentService;
 
     @Value("${spring.mail.username}")
     private String mailServerUsername;
 
-    public EmailService(JavaMailSender mailSender, PdfGenerator pdfGenerator) {
+    public EmailService(JavaMailSender mailSender, EmailAttachmentService attachmentService) {
         this.mailSender = mailSender;
-        this.pdfGenerator = pdfGenerator;
+        this.attachmentService = attachmentService;
     }
 
     public void sendBallotingConfirmationEmail(User user, ConcertSession session) {
@@ -50,14 +51,15 @@ public class EmailService {
     }
 
     public void sendPurchaseConfirmationWithTicketEmail(
-            User user, Ticket[] tickets, Receipt receipt, ConcertSession session) throws MessagingException {
+            User user, Ticket[] tickets, Receipt receipt, ConcertSession session) throws MessagingException, IOException {
         String to = user.getEmail();
         String subject = EmailTemplate.PURCHASE_CONFIRMATION_TITLE;
         String text = String.format(EmailTemplate.PURCHASE_CONFIRMATION, user.getUsername(),
                 session.getConcert().getTitle());
 
-        String[] pathsToPdfs = pdfGenerator.generateTicketsAndReceipt(user, tickets, receipt, session);
-        sendEmailWithAttachments(to, subject, text, pathsToPdfs);
+        String ticketPath = attachmentService.generateTickets(user, tickets, session);
+        String receiptPath = attachmentService.generateReceipt(user, tickets, session, receipt);
+        sendEmailWithAttachments(to, subject, text, ticketPath, receiptPath);
     }
 
     private void sendSimpleEmail(String to, String subject, String text) {
@@ -70,7 +72,7 @@ public class EmailService {
     }
 
     private void sendEmailWithAttachments(
-            String to, String subject, String text, String[] pathsToAttachment) {
+            String to, String subject, String text, String ticketPath, String receiptPath) {
         MimeMessage message = mailSender.createMimeMessage();
 
         try {
@@ -79,10 +81,10 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(text);
-            FileSystemResource ticket = new FileSystemResource(new File(pathsToAttachment[0]));
-            helper.addAttachment("Ticket", ticket);
-            FileSystemResource receipt = new FileSystemResource(new File(pathsToAttachment[1]));
-            helper.addAttachment("Receipt", receipt);
+            FileSystemResource ticket = new FileSystemResource(new File(ticketPath));
+            helper.addAttachment("Ticket.html", ticket);
+            FileSystemResource receipt = new FileSystemResource(new File(receiptPath));
+            helper.addAttachment("Receipt.html", receipt);
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new EmailException("Failed to send email");

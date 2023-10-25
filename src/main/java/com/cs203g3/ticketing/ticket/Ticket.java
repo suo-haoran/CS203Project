@@ -16,12 +16,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(uniqueConstraints = {
     @UniqueConstraint(name = "UniqueSessionAndSeat", columnNames = { "concertSessionId", "seatId" })

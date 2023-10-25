@@ -87,6 +87,7 @@ public class SecurityConfig {
 
                     .requestMatchers("/v1/auth/**").permitAll()
                     .requestMatchers("/v1/test/**").permitAll()
+                    .requestMatchers("/css/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/v1/concerts/**").permitAll()
                     .anyRequest().authenticated()
             );

@@ -1,5 +1,8 @@
 package com.cs203g3.ticketing.email;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,11 +16,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.thymeleaf.TemplateEngine;
 
 import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
-import com.cs203g3.ticketing.email.htmlToPdf.PdfGenerator;
+import com.cs203g3.ticketing.email.attachments.EmailAttachmentService;
 import com.cs203g3.ticketing.receipt.Receipt;
 import com.cs203g3.ticketing.seat.Seat;
 import com.cs203g3.ticketing.section.Section;
@@ -28,7 +32,8 @@ import com.cs203g3.ticketing.venue.Venue;
 import jakarta.mail.MessagingException;
 
 @SpringBootTest
-@ContextConfiguration(classes = { EmailService.class, PdfGenerator.class, EmailConfig.class, JavaMailSender.class })
+@ContextConfiguration(classes = { EmailService.class, EmailAttachmentService.class, EmailConfig.class,
+        JavaMailSender.class, TemplateEngine.class })
 @TestPropertySource(locations = "classpath:application-dev.properties")
 public class EmailServiceIntegrationTest {
 
@@ -60,22 +65,30 @@ public class EmailServiceIntegrationTest {
             Arrays.stream(TICKETS).toList());
 
     @Test
-    public void sendPurchaseConfirmationMessageWithTicket_Valid() throws MessagingException {
-        emailService.sendPurchaseConfirmationWithTicketEmail(USER, TICKETS, INVOICE, CONCERT_SESSION);
+    public void sendPurchaseConfirmationMessageWithTicket_Valid() throws MessagingException, IOException {
+        assertDoesNotThrow(() -> {
+            emailService.sendPurchaseConfirmationWithTicketEmail(USER, TICKETS, INVOICE, CONCERT_SESSION);
+        });
     }
 
     @Test
     public void sendBallotingSuccessMessage_Valid() {
-        emailService.sendBallotingSuccessEmail(USER, CONCERT_SESSION, "http://somerandomurl.com");
+        assertDoesNotThrow(() -> {
+            emailService.sendBallotingSuccessEmail(USER, CONCERT_SESSION, "http://somerandomurl.com");
+        });
     }
 
     @Test
     public void sendBallotingFailedMessage_Valid() {
-        emailService.sendBallotingFailedEmail(USER, CONCERT_SESSION);
+        assertDoesNotThrow(() -> {
+            emailService.sendBallotingFailedEmail(USER, CONCERT_SESSION);
+        });
     }
 
     @Test
     public void sendBallotingConfirmationMessage_Valid() {
-        emailService.sendBallotingConfirmationEmail(USER, CONCERT_SESSION);
+        assertDoesNotThrow(() -> {
+            emailService.sendBallotingConfirmationEmail(USER, CONCERT_SESSION);
+        });
     }
 }

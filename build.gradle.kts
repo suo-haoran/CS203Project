@@ -33,6 +33,8 @@ dependencies {
 	implementation("com.google.code.gson:gson:2.10.1")
 	implementation("com.stripe:stripe-java:23.6.0")
 	implementation("org.thymeleaf:thymeleaf:3.1.2.RELEASE")
+	implementation("org.thymeleaf:thymeleaf-spring5:3.1.2.RELEASE")
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf:3.1.2")
 	implementation("org.xhtmlrenderer:flying-saucer-pdf:9.3.1")
 	implementation("org.modelmapper:modelmapper:3.1.1")
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
