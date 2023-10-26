@@ -39,7 +39,7 @@ public class EmailServiceIntegrationTest {
     private EmailService emailService;
 
     private final User USER = new User(
-            1L, "testuser1", "", "ticketingwinners@gmail.com", "12312312", "SG", new Date(), null);
+            1L, "testuser1", "", "haoran.suo.2022@scis.smu.edu.sg", "12312312", "SG", new Date(), null);
 
     private final Concert CONCERT = new Concert(
             1L, "testconcert1", "testdescription1", "artist",
