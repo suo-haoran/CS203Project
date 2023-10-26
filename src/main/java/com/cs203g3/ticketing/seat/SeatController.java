@@ -11,7 +11,7 @@ import com.cs203g3.ticketing.seat.dto.SeatResponseDto;
 
 
 @RestController
-@RequestMapping("/venues/{venueId}/sections/{sectionId}/seats")
+@RequestMapping("/v1/venues/{venueId}/sections/{sectionId}/seats")
 public class SeatController {
 
     private SeatService seatService;    
