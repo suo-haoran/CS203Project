@@ -10,7 +10,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
 import com.cs203g3.ticketing.email.attachments.EmailAttachmentService;
 import com.cs203g3.ticketing.receipt.Receipt;
@@ -33,21 +32,21 @@ public class EmailService {
         this.attachmentService = attachmentService;
     }
 
-    public void sendBallotingConfirmationEmail(User user, Concert concert) {
+    public void sendBallotingConfirmationEmail(User user, ConcertSession concertSession) {
         String message = String.format(EmailTemplate.BALLOT_JOIN, user.getUsername(),
-                concert.getTitle());
+                concertSession.getConcert().getTitle());
         sendSimpleEmail(user.getEmail(), EmailTemplate.BALLOT_JOIN_TITLE, message);
     }
 
-    public void sendBallotingFailedEmail(User user, Concert concert) {
+    public void sendBallotingFailedEmail(User user, ConcertSession concertSession) {
         String message = String.format(EmailTemplate.BALLOT_FAILED, user.getUsername(),
-                concert.getTitle());
+                concertSession.getConcert().getTitle());
         sendSimpleEmail(user.getEmail(), EmailTemplate.BALLOT_FAILED_TITLE, message);
     }
 
-    public void sendBallotingSuccessEmail(User user, Concert concert, String url) {
+    public void sendBallotingSuccessEmail(User user, ConcertSession concertSession, String url) {
         String text = String.format(EmailTemplate.BALLOT_SUCCESS, user.getUsername(),
-                concert.getTitle(), url);
+                concertSession.getConcert().getTitle(), url);
         sendSimpleEmail(user.getEmail(), EmailTemplate.BALLOT_SUCCESS_TITLE, text);
     }
 

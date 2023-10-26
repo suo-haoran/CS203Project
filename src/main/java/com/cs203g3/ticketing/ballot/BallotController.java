@@ -16,7 +16,7 @@ import com.cs203g3.ticketing.security.auth.UserDetailsImpl;
 
 
 @RestController
-@RequestMapping("/v1/concerts/{concertId}/categories/{categoryId}/ballots")
+@RequestMapping("/v1/sessions/{concertSessionId}/categories/{categoryId}/ballots")
 public class BallotController {
 
     private BallotService ballotService;
@@ -26,19 +26,19 @@ public class BallotController {
     }
 
     @GetMapping
-    public List<BallotResponseDto> getAllBallotsByConcertIdAndCategoryId(@PathVariable Long concertId, @PathVariable Long categoryId) {
-        return ballotService.getAllBallotsByConcertIdAndCategoryId(concertId, categoryId);
+    public List<BallotResponseDto> getAllBallotsByConcertSessionIdAndCategoryId(@PathVariable Long concertSessionId, @PathVariable Long categoryId) {
+        return ballotService.getAllBallotsByConcertSessionIdAndCategoryId(concertSessionId, categoryId);
     }
 
     @PostMapping
     @ResponseStatus(code=HttpStatus.CREATED)
-    public BallotResponseDto addBallotAsCurrentUser(Authentication auth, @PathVariable Long concertId, @PathVariable Long categoryId) {
+    public BallotResponseDto addBallotAsCurrentUser(Authentication auth, @PathVariable Long concertSessionId, @PathVariable Long categoryId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        return ballotService.addBallot(userDetails, concertId, categoryId);
+        return ballotService.addBallot(userDetails, concertSessionId, categoryId);
     }
 
     @PostMapping("/randomise")
-    public void randomiseBallotsByConcertIdAndCategoryId(@PathVariable Long concertId, @PathVariable Long categoryId) {
-        ballotService.randomiseBallotForConcertIdAndCategoryId(concertId, categoryId);
+    public void randomiseBallotsByConcertIdAndCategoryId(@PathVariable Long concertSessionId, @PathVariable Long categoryId) {
+        ballotService.randomiseBallotForConcertSessionIdAndCategoryId(concertSessionId, categoryId);
     }
 }

@@ -73,21 +73,21 @@ public class EmailServiceIntegrationTest {
     @Test
     public void sendBallotingSuccessMessage_Valid() {
         assertDoesNotThrow(() -> {
-            emailService.sendBallotingSuccessEmail(USER, CONCERT, "http://somerandomurl.com");
+            emailService.sendBallotingSuccessEmail(USER, CONCERT_SESSION, "http://somerandomurl.com");
         });
     }
 
     @Test
     public void sendBallotingFailedMessage_Valid() {
         assertDoesNotThrow(() -> {
-            emailService.sendBallotingFailedEmail(USER, CONCERT);
+            emailService.sendBallotingFailedEmail(USER, CONCERT_SESSION);
         });
     }
 
     @Test
     public void sendBallotingConfirmationMessage_Valid() {
         assertDoesNotThrow(() -> {
-            emailService.sendBallotingConfirmationEmail(USER, CONCERT);
+            emailService.sendBallotingConfirmationEmail(USER, CONCERT_SESSION);
         });
     }
 }

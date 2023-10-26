@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BallotRepository extends JpaRepository<Ballot, Long> {
-    List<Ballot> findAllByConcertIdAndCategoryId(Long concertId, Long categoryId);
+    List<Ballot> findAllByConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId);
 }

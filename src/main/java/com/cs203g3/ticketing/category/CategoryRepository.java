@@ -5,11 +5,14 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.cs203g3.ticketing.concert.Concert;
+import com.cs203g3.ticketing.concertSession.ConcertSession;
 import com.cs203g3.ticketing.venue.Venue;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findAllByVenue(Venue venue);
+
     Optional<Category> findByVenueAndId(Venue venue, Long categoryId);
-    Optional<Category> findByVenueAndIdAndActiveBallotCategoriesConcert(Venue venue, Long categoryId, Concert concert);
+
+    Optional<Category> findByVenueAndIdAndActiveBallotCategoriesConcertSessions(
+        Venue venue, Long categoryId, ConcertSession concertSession);
 }

@@ -1,7 +1,7 @@
 package com.cs203g3.ticketing.ballot.dto;
 
 import com.cs203g3.ticketing.category.dto.CategoryIdAndNameOnlyResponseDto;
-import com.cs203g3.ticketing.concert.dto.ConcertIdAndTitleOnlyResponseDto;
+import com.cs203g3.ticketing.concertSession.dto.ConcertSessionResponseDto;
 import com.cs203g3.ticketing.user.dto.UserIdAndNameOnlyResponseDto;
 
 import lombok.Data;
@@ -12,7 +12,7 @@ public class BallotResponseDto {
 
     private UserIdAndNameOnlyResponseDto user;
 
-    private ConcertIdAndTitleOnlyResponseDto concert;
+    private ConcertSessionResponseDto concertSession;
 
     private CategoryIdAndNameOnlyResponseDto category;
 }

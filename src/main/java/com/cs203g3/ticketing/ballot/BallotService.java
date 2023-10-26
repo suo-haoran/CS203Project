@@ -14,6 +14,8 @@ import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.category.CategoryRepository;
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
+import com.cs203g3.ticketing.concertSession.ConcertSession;
+import com.cs203g3.ticketing.concertSession.ConcertSessionRepository;
 import com.cs203g3.ticketing.email.EmailService;
 import com.cs203g3.ticketing.exception.ResourceAlreadyExistsException;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
@@ -29,46 +31,51 @@ public class BallotService {
     private BallotRepository ballots;
 
     private CategoryRepository categories;
-    private ConcertRepository concerts;
+    private ConcertSessionRepository concertSessions;
     private UserRepository users;
 
     private EmailService emailService;
 
-    public BallotService(ModelMapper modelMapper, BallotRepository ballots, CategoryRepository categories, ConcertRepository concerts, UserRepository users, EmailService emailService) {
+    public BallotService(
+        ModelMapper modelMapper, BallotRepository ballots,
+        CategoryRepository categories, ConcertSessionRepository concertSessions,
+        UserRepository users, EmailService emailService) {
         this.modelMapper = modelMapper;
         this.ballots = ballots;
         this.categories = categories;
-        this.concerts = concerts;
+        this.concertSessions = concertSessions;
         this.users = users;
         this.emailService = emailService;
     }
 
-    public void verifyValidConcertIdAndCategoryId(Long concertId, Long categoryId) {
-        concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
-        categories.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException(Category.class, concertId));
+    public void verifyValidConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
+        concertSessions.findById(concertSessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
+        categories.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException(Category.class, categoryId));
     }
 
-    public List<BallotResponseDto> getAllBallotsByConcertIdAndCategoryId(Long concertId, Long categoryId) {
-        verifyValidConcertIdAndCategoryId(concertId, categoryId);
+    public List<BallotResponseDto> getAllBallotsByConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
+        verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
 
-        return ballots.findAllByConcertIdAndCategoryId(concertId, categoryId).stream()
+        return ballots.findAllByConcertSessionIdAndCategoryId(concertSessionId, categoryId).stream()
             .map(ballot -> modelMapper.map(ballot, BallotResponseDto.class))
             .collect(Collectors.toList());
     }
 
-    public BallotResponseDto addBallot(UserDetailsImpl userDetails, Long concertId, Long categoryId) {
+    public BallotResponseDto addBallot(UserDetailsImpl userDetails, Long concertSessionId, Long categoryId) {
         Long userId = userDetails.getId();
 
         User user = users.findById(userId).orElseThrow(() -> new ResourceNotFoundException(User.class, userId));
-        Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
-        Category category = categories.findByVenueAndIdAndActiveBallotCategoriesConcert(concert.getVenue(), categoryId, concert)
+        ConcertSession concertSession = concertSessions.findById(concertSessionId)
+            .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
+        Category category = categories
+            .findByVenueAndIdAndActiveBallotCategoriesConcertSessions(concertSession.getConcert().getVenue(), categoryId, concertSession)
             .orElseThrow(() -> new ResourceNotFoundException("This category is either not available for balloting now or does not exist at all"));
 
-        Ballot newBallot = new Ballot(user, concert, category);
+        Ballot newBallot = new Ballot(user, concertSession, category);
 
         try {
             BallotResponseDto result = modelMapper.map(ballots.save(newBallot), BallotResponseDto.class);
-            emailService.sendBallotingConfirmationEmail(user, concert);
+            emailService.sendBallotingConfirmationEmail(user, concertSession);
             return result;
         } catch (DataIntegrityViolationException ex) {
             ConstraintViolationException cve = (ConstraintViolationException) ex.getCause();
@@ -80,10 +87,10 @@ public class BallotService {
         }
     }
 
-    public void randomiseBallotForConcertIdAndCategoryId(Long concertId, Long categoryId) {
-        verifyValidConcertIdAndCategoryId(concertId, categoryId);
+    public void randomiseBallotForConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
+        verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
 
-        List<Ballot> receivedBallots = ballots.findAllByConcertIdAndCategoryId(concertId, categoryId);
+        List<Ballot> receivedBallots = ballots.findAllByConcertSessionIdAndCategoryId(concertSessionId, categoryId);
         Collections.shuffle(receivedBallots);
 
         for (int i = 0; i < receivedBallots.size(); i++) {
