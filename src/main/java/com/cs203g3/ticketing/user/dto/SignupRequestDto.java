@@ -1,7 +1,6 @@
 package com.cs203g3.ticketing.user.dto;
 
 import java.util.Date;
-import java.util.Set;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;

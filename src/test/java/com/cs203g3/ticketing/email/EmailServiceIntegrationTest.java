@@ -29,8 +29,6 @@ import com.cs203g3.ticketing.ticket.Ticket;
 import com.cs203g3.ticketing.user.User;
 import com.cs203g3.ticketing.venue.Venue;
 
-import jakarta.mail.MessagingException;
-
 @SpringBootTest
 @ContextConfiguration(classes = { EmailService.class, EmailAttachmentService.class, EmailConfig.class,
         JavaMailSender.class, TemplateEngine.class })
@@ -43,13 +41,14 @@ public class EmailServiceIntegrationTest {
     private final User USER = new User(
             1L, "testuser1", "", "ticketingwinners@gmail.com", "12312312", "SG", new Date(), null);
 
-    private final ConcertSession CONCERT_SESSION = new ConcertSession(
-            1L, LocalDateTime.now(), new Concert(
-                    1L, "testconcert1", "testdescription1", "artist",
-                    new Venue(1L, "Singapore National Stadium", new ArrayList<>(),
-                            new ArrayList<>()),
-                    new ArrayList<>(),
-                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>()),
+    private final Concert CONCERT = new Concert(
+            1L, "testconcert1", "testdescription1", "artist",
+            new Venue(1L, "Singapore National Stadium", new ArrayList<>(),
+                    new ArrayList<>()),
+            new ArrayList<>(),
+            new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+
+    private final ConcertSession CONCERT_SESSION = new ConcertSession(1L, LocalDateTime.now(), CONCERT,
             new ArrayList<>());
 
     private final Ticket[] TICKETS = new Ticket[] {
@@ -65,7 +64,7 @@ public class EmailServiceIntegrationTest {
             Arrays.stream(TICKETS).toList());
 
     @Test
-    public void sendPurchaseConfirmationMessageWithTicket_Valid() throws MessagingException, IOException {
+    public void sendPurchaseConfirmationMessageWithTicket_Valid() throws IOException {
         assertDoesNotThrow(() -> {
             emailService.sendPurchaseConfirmationWithTicketEmail(USER, TICKETS, INVOICE, CONCERT_SESSION);
         });
@@ -74,21 +73,21 @@ public class EmailServiceIntegrationTest {
     @Test
     public void sendBallotingSuccessMessage_Valid() {
         assertDoesNotThrow(() -> {
-            emailService.sendBallotingSuccessEmail(USER, CONCERT_SESSION, "http://somerandomurl.com");
+            emailService.sendBallotingSuccessEmail(USER, CONCERT, "http://somerandomurl.com");
         });
     }
 
     @Test
     public void sendBallotingFailedMessage_Valid() {
         assertDoesNotThrow(() -> {
-            emailService.sendBallotingFailedEmail(USER, CONCERT_SESSION);
+            emailService.sendBallotingFailedEmail(USER, CONCERT);
         });
     }
 
     @Test
     public void sendBallotingConfirmationMessage_Valid() {
         assertDoesNotThrow(() -> {
-            emailService.sendBallotingConfirmationEmail(USER, CONCERT_SESSION);
+            emailService.sendBallotingConfirmationEmail(USER, CONCERT);
         });
     }
 }
