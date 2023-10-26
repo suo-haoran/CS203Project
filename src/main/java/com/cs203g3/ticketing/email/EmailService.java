@@ -10,6 +10,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
 import com.cs203g3.ticketing.email.attachments.EmailAttachmentService;
 import com.cs203g3.ticketing.receipt.Receipt;
@@ -32,26 +33,26 @@ public class EmailService {
         this.attachmentService = attachmentService;
     }
 
-    public void sendBallotingConfirmationEmail(User user, ConcertSession session) {
+    public void sendBallotingConfirmationEmail(User user, Concert concert) {
         String message = String.format(EmailTemplate.BALLOT_JOIN, user.getUsername(),
-                session.getConcert().getTitle());
+                concert.getTitle());
         sendSimpleEmail(user.getEmail(), EmailTemplate.BALLOT_JOIN_TITLE, message);
     }
 
-    public void sendBallotingFailedEmail(User user, ConcertSession session) {
+    public void sendBallotingFailedEmail(User user, Concert concert) {
         String message = String.format(EmailTemplate.BALLOT_FAILED, user.getUsername(),
-                session.getConcert().getTitle());
+                concert.getTitle());
         sendSimpleEmail(user.getEmail(), EmailTemplate.BALLOT_FAILED_TITLE, message);
     }
 
-    public void sendBallotingSuccessEmail(User user, ConcertSession session, String url) {
+    public void sendBallotingSuccessEmail(User user, Concert concert, String url) {
         String text = String.format(EmailTemplate.BALLOT_SUCCESS, user.getUsername(),
-                session.getConcert().getTitle(), url);
+                concert.getTitle(), url);
         sendSimpleEmail(user.getEmail(), EmailTemplate.BALLOT_SUCCESS_TITLE, text);
     }
 
     public void sendPurchaseConfirmationWithTicketEmail(
-            User user, Ticket[] tickets, Receipt receipt, ConcertSession session) throws MessagingException, IOException {
+            User user, Ticket[] tickets, Receipt receipt, ConcertSession session) throws IOException {
         String to = user.getEmail();
         String subject = EmailTemplate.PURCHASE_CONFIRMATION_TITLE;
         String text = String.format(EmailTemplate.PURCHASE_CONFIRMATION, user.getUsername(),

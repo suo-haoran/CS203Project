@@ -1,3 +1,4 @@
+
 package com.cs203g3.ticketing.exception;
 
 import java.io.IOException;

@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -26,6 +28,7 @@ import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.category.CategoryRepository;
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
+import com.cs203g3.ticketing.email.EmailService;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.security.auth.UserDetailsImpl;
 import com.cs203g3.ticketing.user.User;
@@ -51,6 +54,9 @@ public class BallotServiceTest {
 
     @Mock
     private ModelMapper modelMapper;
+
+    @Mock 
+    private EmailService emailService;
 
     @BeforeEach
     public void setup() {
@@ -152,6 +158,7 @@ public class BallotServiceTest {
                 concert)).thenReturn(Optional.of(category));
         when(ballots.save(Mockito.any(Ballot.class))).thenReturn(new Ballot());
         when(modelMapper.map(any(Ballot.class), eq(BallotResponseDto.class))).thenReturn(ballotDto);
+        doNothing().when(emailService).sendBallotingConfirmationEmail(user, concert);
 
         BallotResponseDto result = ballotService.addBallot(userDetails, concertId, categoryId);
 
@@ -232,7 +239,6 @@ public class BallotServiceTest {
         when(categories.findById(categoryId)).thenReturn(Optional.of(new Category()));
         when(ballots.findAllByConcertIdAndCategoryId(concertId, categoryId))
                 .thenReturn(Collections.singletonList(ballot));
-
         ballotService.randomiseBallotForConcertIdAndCategoryId(concertId, categoryId);
 
         // Assertions
@@ -240,5 +246,6 @@ public class BallotServiceTest {
         verify(concerts).findById(concertId);
         verify(categories).findById(categoryId);
         verify(ballots).findAllByConcertIdAndCategoryId(concertId, categoryId);
+        
     }
 }

@@ -14,6 +14,7 @@ import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.category.CategoryRepository;
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
+import com.cs203g3.ticketing.email.EmailService;
 import com.cs203g3.ticketing.exception.ResourceAlreadyExistsException;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.security.auth.UserDetailsImpl;
@@ -31,12 +32,15 @@ public class BallotService {
     private ConcertRepository concerts;
     private UserRepository users;
 
-    public BallotService(ModelMapper modelMapper, BallotRepository ballots, CategoryRepository categories, ConcertRepository concerts, UserRepository users) {
+    private EmailService emailService;
+
+    public BallotService(ModelMapper modelMapper, BallotRepository ballots, CategoryRepository categories, ConcertRepository concerts, UserRepository users, EmailService emailService) {
         this.modelMapper = modelMapper;
         this.ballots = ballots;
         this.categories = categories;
         this.concerts = concerts;
         this.users = users;
+        this.emailService = emailService;
     }
 
     public void verifyValidConcertIdAndCategoryId(Long concertId, Long categoryId) {
@@ -63,7 +67,9 @@ public class BallotService {
         Ballot newBallot = new Ballot(user, concert, category);
 
         try {
-            return modelMapper.map(ballots.save(newBallot), BallotResponseDto.class);
+            BallotResponseDto result = modelMapper.map(ballots.save(newBallot), BallotResponseDto.class);
+            emailService.sendBallotingConfirmationEmail(user, concert);
+            return result;
         } catch (DataIntegrityViolationException ex) {
             ConstraintViolationException cve = (ConstraintViolationException) ex.getCause();
             if (cve.getConstraintName().equals("ballot.UniqueUserConcertCategoryIdentifier")) {
@@ -81,7 +87,8 @@ public class BallotService {
         Collections.shuffle(receivedBallots);
 
         for (int i = 0; i < receivedBallots.size(); i++) {
-            receivedBallots.get(i).setBallotResult(Long.valueOf(i));
+            Ballot receivedBallot = receivedBallots.get(i);
+            receivedBallot.setBallotResult(Long.valueOf(i));
         }
 
         ballots.saveAll(receivedBallots);

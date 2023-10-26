@@ -21,6 +21,8 @@ import com.cs203g3.ticketing.ticket.dto.TicketRequestDto;
 import com.cs203g3.ticketing.ticket.dto.TicketResponseDto;
 import com.cs203g3.ticketing.ticket.dto.TicketResponseWithoutReceiptDto;
 import com.cs203g3.ticketing.ticket.dto.TicketResponseWithoutSessionDto;
+import com.cs203g3.ticketing.user.User;
+import com.cs203g3.ticketing.user.UserRepository;
 
 @Service
 public class TicketService {
@@ -32,8 +34,9 @@ public class TicketService {
     private ConcertSessionRepository sessions;
     private ReceiptRepository receipts;
     private SeatRepository seats;
+    private UserRepository users;
 
-    public TicketService(ModelMapper modelMapper, TicketRepository tickets, ConcertRepository concerts, ConcertSessionRepository sessions, ReceiptRepository receipts, SeatRepository seats) {
+    public TicketService(ModelMapper modelMapper, TicketRepository tickets, ConcertRepository concerts, ConcertSessionRepository sessions, ReceiptRepository receipts, SeatRepository seats, UserRepository users) {
         this.modelMapper = modelMapper;
 
         this.tickets = tickets;
@@ -41,6 +44,15 @@ public class TicketService {
         this.sessions = sessions;
         this.receipts = receipts;
         this.seats = seats;
+        this.users = users;
+    }
+
+
+    public List<TicketResponseWithoutReceiptDto> getAllTicketsByUser(String username) {
+        User user = users.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException(String.format("User with username %s does not exist", username)));
+        return tickets.findByReceiptUser(user).stream()
+            .map(ticket -> modelMapper.map(ticket, TicketResponseWithoutReceiptDto.class))
+            .collect(Collectors.toList());
     }
 
     public List<TicketResponseWithoutSessionDto> getAllTicketsByConcertIdAndSessionId(Long concertId, Long sessionId) {

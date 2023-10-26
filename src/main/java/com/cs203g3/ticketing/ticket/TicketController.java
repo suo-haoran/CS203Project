@@ -3,6 +3,8 @@ package com.cs203g3.ticketing.ticket;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +26,12 @@ public class TicketController {
 
     public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
+    }
+
+    @GetMapping("/user/tickets")
+    public List<TicketResponseWithoutReceiptDto> getAllTicketsByUser(Authentication auth) {
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        return ticketService.getAllTicketsByUser(userDetails.getUsername());
     }
 
     @GetMapping("/concerts/{concertId}/sessions/{sessionId}/tickets")
