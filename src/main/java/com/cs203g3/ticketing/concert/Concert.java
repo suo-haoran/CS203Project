@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -61,8 +62,9 @@ public class Concert extends BaseEntity {
     @OneToMany(mappedBy="concert")
     private List<ActiveBallotCategory> activeBallotCategories;
 
+    // FetchType.EAGER here to allow iteration when handling ActiveBallot scheduling
     @JsonIgnore
-    @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
+    @OneToMany(mappedBy="concert", cascade=CascadeType.ALL, fetch=FetchType.EAGER)
     private List<ConcertSession> sessions;
 
     @JsonIgnore

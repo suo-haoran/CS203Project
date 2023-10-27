@@ -17,4 +17,6 @@ public interface TicketRepository extends JpaRepository<Ticket, UUID> {
     List<Ticket> findByConcertSessionConcertAndConcertSession(Concert concert, ConcertSession session);
     List<Ticket> findByReceipt(Receipt receipt);
     List<Ticket> findByReceiptUser(User user);
+
+    Integer countByConcertSessionIdAndReceiptIsNull(Long concertSessionId);
 }
