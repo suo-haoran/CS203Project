@@ -109,6 +109,7 @@ public class SecurityConfig {
                     .requestMatchers("/v1/test/**").permitAll()
                     .requestMatchers("/css/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/v1/concerts/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/v1/payment-completed").permitAll()                    
                     .anyRequest().authenticated()
             );
         http.authenticationProvider(authenticationProvider());
