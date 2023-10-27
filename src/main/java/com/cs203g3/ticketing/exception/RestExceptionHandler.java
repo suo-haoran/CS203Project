@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -48,60 +49,94 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         response.sendError(HttpStatus.BAD_REQUEST.value());
     }
 
-    @ExceptionHandler({ BadCredentialsException.class })
-    public ResponseEntity<Object> handleAccessDeniedException(
-            Exception ex, WebRequest request) {
+    @ExceptionHandler({ RuntimeException.class })
+    public ResponseEntity<Object> handleOtherRuntimeException(RuntimeException ex) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", new Date());
-        body.put("status", HttpStatus.UNAUTHORIZED);
+        body.put("status", status);
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
+    }
+
+    @ExceptionHandler({ AuthenticationException.class })
+    public ResponseEntity<Object> handleAuthenticationException(Exception ex) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", status);
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
+    }
+
+    @ExceptionHandler({ BadCredentialsException.class })
+    public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", status);
         body.put("message", ex.getMessage());
         body.put("path", request.getDescription(false));
-        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
     }
 
     @ExceptionHandler({ DataIntegrityViolationException.class })
     public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        HttpStatus status = HttpStatus.CONFLICT;
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", new Date());
-        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("status", status);
         body.put("message", ex.getRootCause().getMessage());
-        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
     }
 
-    @ExceptionHandler({ RuntimeException.class })
-    public ResponseEntity<Object> handleOtherRuntimeException(
-            RuntimeException ex) {
+    @ExceptionHandler({ EmailException.class })
+    public ResponseEntity<Object> handleMessagingException(EmailException ex) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", new Date());
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
+        body.put("status", status);
         body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
     }
 
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<Object> handleMaxSizeException(MaxUploadSizeExceededException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.EXPECTATION_FAILED);
-        body.put("message", "File too large!");
-        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.EXPECTATION_FAILED);
-    }
-
-    @ExceptionHandler(EmailException.class)
-     public ResponseEntity<Object> handleMessagingException(EmailException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", new Date());
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
-    } 
-
-    @ExceptionHandler(IOException.class)
+    @ExceptionHandler({ IOException.class })
     public ResponseEntity<Object> handleIOException(IOException ex) {
-       Map<String, Object> body = new LinkedHashMap<>();
-       body.put("timestamp", new Date());
-       body.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
-       body.put("message", ex.getMessage());
-       return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", status);
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
+    }
+
+    @ExceptionHandler({ ResourceAlreadyExistsException.class })
+    public ResponseEntity<Object> handleResourceAlreadyExistsException(RuntimeException ex) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", status);
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
+    }
+
+    @ExceptionHandler({ ResourceNotFoundException.class })
+    public ResponseEntity<Object> handleResourceNotFoundException(RuntimeException ex) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", status);
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
+    }
+
+    @ExceptionHandler({ MaxUploadSizeExceededException.class })
+    public ResponseEntity<Object> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+        HttpStatus status = HttpStatus.EXPECTATION_FAILED;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", status);
+        body.put("message", "File too large!");
+        return new ResponseEntity<>(body, new HttpHeaders(), status);
     }
 }
