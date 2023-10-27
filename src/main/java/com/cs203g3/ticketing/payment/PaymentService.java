@@ -24,6 +24,7 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.ApiResource;
 import com.stripe.net.Webhook;
 
 import jakarta.transaction.Transactional;
@@ -56,13 +57,13 @@ public class PaymentService {
     private Session processStripePayloadAndGetSession(String stripeSignature, String stripePayload) {
         Event event = null;
         // Use this line instead of Webhook.constructEvent() if no signature
-        // event = ApiResource.GSON.fromJson(stripePayload, Event.class);
+        event = ApiResource.GSON.fromJson(stripePayload, Event.class);
 
-        try {
-            event = Webhook.constructEvent(stripePayload, stripeSignature, endpointSecret);
-        } catch (SignatureVerificationException e) {
-            throw new StripeSignatureVerificationException("Error verifying Stripe webhook signature: " + e.getMessage());
-        }
+        // try {
+        //     event = Webhook.constructEvent(stripePayload, stripeSignature, endpointSecret);
+        // } catch (SignatureVerificationException e) {
+        //     throw new StripeSignatureVerificationException("Error verifying Stripe webhook signature: " + e.getMessage());
+        // }
 
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         if (!dataObjectDeserializer.getObject().isPresent()) {
