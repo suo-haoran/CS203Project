@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.TaskScheduler;
@@ -27,6 +28,9 @@ import com.cs203g3.ticketing.user.UserRepository;
 
 @Service
 public class BallotService {
+
+    @Value("${cs203.frontend.url}")
+    private String frontendUrl;
 
     private ModelMapper modelMapper;
     private TaskScheduler taskScheduler;
@@ -146,6 +150,11 @@ public class BallotService {
 
         for (Ballot ballot : ballotsForNextWindow) {
             ballot.setPurchaseAllowed(EnumPurchaseAllowed.ALLOWED);
+            emailService.sendBallotingSuccessEmail(
+                ballot.getUser(),
+                ballot.getConcertSession(), 
+                String.format("https://%s/ticket?concertSession=%ld&category=%ld", frontendUrl, concertSessionId, categoryId)
+            );
         }
         ballots.saveAll(ballotsForNextWindow);
         System.out.println("Window for sessionId #<" + concertSessionId + "> successfully opened for next <" + ballotsForNextWindow.size() + "> users");
@@ -153,6 +162,7 @@ public class BallotService {
         taskScheduler.schedule(() -> {
             openNextPurchaseWindow(concertSessionId, categoryId);
         }, Instant.now().plusSeconds(WINDOW_ROTATION_IN_SECONDS));
+
         System.out.println("Next window rotation for sessionId #<" + concertSessionId + "> scheduled in " + WINDOW_ROTATION_IN_SECONDS + " seconds");
     }
 }
