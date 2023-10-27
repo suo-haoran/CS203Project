@@ -34,6 +34,7 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.security.auth.UserDetailsImpl;
 import com.cs203g3.ticketing.user.User;
 import com.cs203g3.ticketing.user.UserRepository;
+import com.cs203g3.ticketing.venue.Venue;
 
 @ExtendWith(MockitoExtension.class)
 public class BallotServiceTest {
@@ -69,15 +70,21 @@ public class BallotServiceTest {
         Long concertSessionId = 1L;
         Long categoryId = 2L;
 
+        Venue venue = new Venue();
+        Concert concert = new Concert();
+        concert.setVenue(venue);
+        ConcertSession concertSession = new ConcertSession();
+        concertSession.setConcert(concert);
+
         // Mock the behavior of repositories
-        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(new ConcertSession()));
-        when(categories.findById(categoryId)).thenReturn(Optional.of(new Category()));
+        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(concertSession));
+        when(categories.findByVenueAndId(venue, categoryId)).thenReturn(Optional.of(new Category()));
 
         ballotService.verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
 
         // Assertions
         verify(concertSessions).findById(concertSessionId);
-        verify(categories).findById(categoryId);
+        verify(categories).findByVenueAndId(venue, categoryId);
     }
 
     @Test
@@ -101,9 +108,15 @@ public class BallotServiceTest {
         Long concertSessionId = 1L;
         Long categoryId = 2L;
 
+        Venue venue = new Venue();
+        Concert concert = new Concert();
+        concert.setVenue(venue);
+        ConcertSession concertSession = new ConcertSession();
+        concertSession.setConcert(concert);
+
         // Mock the behavior of repositories
-        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(new ConcertSession()));
-        when(categories.findById(categoryId)).thenReturn(Optional.empty());
+        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(concertSession));
+        when(categories.findByVenueAndId(venue, categoryId)).thenReturn(Optional.empty());
 
         assertThrowsExactly(ResourceNotFoundException.class, () -> {
             ballotService.verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
@@ -111,7 +124,7 @@ public class BallotServiceTest {
 
         // Assertions
         verify(concertSessions).findById(concertSessionId);
-        verify(categories).findById(categoryId);
+        verify(categories).findByVenueAndId(venue, categoryId);
     }
 
     @Test
@@ -122,9 +135,15 @@ public class BallotServiceTest {
         ballot.setId(1L);
         BallotResponseDto ballotDto = new BallotResponseDto();
 
+        Venue venue = new Venue();
+        Concert concert = new Concert();
+        concert.setVenue(venue);
+        ConcertSession concertSession = new ConcertSession();
+        concertSession.setConcert(concert);
+
         // Mock the behavior of repositories
-        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(new ConcertSession()));
-        when(categories.findById(categoryId)).thenReturn(Optional.of(new Category()));
+        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(concertSession));
+        when(categories.findByVenueAndId(venue, categoryId)).thenReturn(Optional.of(new Category()));
         when(ballots.findAllByConcertSessionIdAndCategoryId(concertSessionId, categoryId))
                 .thenReturn(Collections.singletonList(ballot));
         when(modelMapper.map(any(Ballot.class), eq(BallotResponseDto.class))).thenReturn(ballotDto);
@@ -135,7 +154,7 @@ public class BallotServiceTest {
         assertTrue(result.size() == 1);
         assertTrue(result.get(0) == ballotDto);
         verify(concertSessions).findById(concertSessionId);
-        verify(categories).findById(categoryId);
+        verify(categories).findByVenueAndId(venue, categoryId);
         verify(ballots).findAllByConcertSessionIdAndCategoryId(concertSessionId, categoryId);
         verify(modelMapper).map(any(Ballot.class), eq(BallotResponseDto.class));
     }
@@ -242,9 +261,15 @@ public class BallotServiceTest {
         Ballot ballot = new Ballot();
         ballot.setId(1L);
 
+        Venue venue = new Venue();
+        Concert concert = new Concert();
+        concert.setVenue(venue);
+        ConcertSession concertSession = new ConcertSession();
+        concertSession.setConcert(concert);
+
         // Mock the behavior of repositories
-        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(new ConcertSession()));
-        when(categories.findById(categoryId)).thenReturn(Optional.of(new Category()));
+        when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(concertSession));
+        when(categories.findByVenueAndId(venue, categoryId)).thenReturn(Optional.of(new Category()));
         when(ballots.findAllByConcertSessionIdAndCategoryId(concertSessionId, categoryId))
                 .thenReturn(Collections.singletonList(ballot));
         ballotService.randomiseBallotForConcertSessionIdAndCategoryId(concertSessionId, categoryId);
@@ -252,7 +277,7 @@ public class BallotServiceTest {
         // Assertions
         verify(ballots).saveAll(Mockito.anyList());
         verify(concertSessions).findById(concertSessionId);
-        verify(categories).findById(categoryId);
+        verify(categories).findByVenueAndId(venue, categoryId);
         verify(ballots).findAllByConcertSessionIdAndCategoryId(concertSessionId, categoryId);
     }
 }
