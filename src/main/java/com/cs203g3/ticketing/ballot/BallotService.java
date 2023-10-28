@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +33,8 @@ public class BallotService {
 
     @Value("${cs203.frontend.url}")
     private String frontendUrl;
+
+    private static Logger logger = LoggerFactory.getLogger(BallotService.class);
 
     private ModelMapper modelMapper;
     private TaskScheduler taskScheduler;
@@ -128,7 +132,7 @@ public class BallotService {
         }
         ballots.saveAll(ballotsInWindow);
 
-        System.out.println("Window for sessionId #<" + concertSessionId + "> closed for <" + ballotsInWindow.size() + "> users");
+        logger.info("Window for sessionId #<" + concertSessionId + "> closed for <" + ballotsInWindow.size() + "> users");
     }
 
     // Set purchaseAllowed to ALLOWED for the next X # of ballots that have purchaseAllowed = NOT_YET
@@ -144,7 +148,7 @@ public class BallotService {
             concertSessionId, categoryId, EnumPurchaseAllowed.NOT_YET, PageRequest.of(0, availableSeats));
 
         if (availableSeats <= 0 || ballotsForNextWindow.size() <= 0) {
-            System.out.println("No more available seats/ballots for next window, stopping here");
+            logger.info("No more available seats/ballots for next window, stopping here");
             return;
         }
 
@@ -157,12 +161,11 @@ public class BallotService {
             );
         }
         ballots.saveAll(ballotsForNextWindow);
-        System.out.println("Window for sessionId #<" + concertSessionId + "> successfully opened for next <" + ballotsForNextWindow.size() + "> users");
+        logger.info("Window for sessionId #<" + concertSessionId + "> successfully opened for next <" + ballotsForNextWindow.size() + "> users");
 
         taskScheduler.schedule(() -> {
             openNextPurchaseWindow(concertSessionId, categoryId);
         }, Instant.now().plusSeconds(WINDOW_ROTATION_IN_SECONDS));
-
-        System.out.println("Next window rotation for sessionId #<" + concertSessionId + "> scheduled in " + WINDOW_ROTATION_IN_SECONDS + " seconds");
+        logger.info("Next window rotation for sessionId #<" + concertSessionId + "> scheduled in " + WINDOW_ROTATION_IN_SECONDS + " seconds");
     }
 }

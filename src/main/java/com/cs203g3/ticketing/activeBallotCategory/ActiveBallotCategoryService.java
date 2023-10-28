@@ -3,6 +3,8 @@ package com.cs203g3.ticketing.activeBallotCategory;
 import java.time.Instant;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,8 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 
 @Service
 public class ActiveBallotCategoryService {
+
+    private static Logger logger = LoggerFactory.getLogger(ActiveBallotCategoryService.class);
 
     private final TaskScheduler taskScheduler;
 
@@ -55,7 +59,7 @@ public class ActiveBallotCategoryService {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
 
-        System.out.println("Scheduled closure of ActiveBallotCategory for ConcertId<" + concertId + ">, Category<" + categoryId + ">");
+        logger.info("Scheduled closure of ActiveBallotCategory for ConcertId<" + concertId + ">, Category<" + categoryId + ">");
         activeBallotCategories.delete(abc);
     }
 
@@ -63,7 +67,7 @@ public class ActiveBallotCategoryService {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
 
-        System.out.println("Randomizing ballot results for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + ">");
+        logger.info("Randomizing ballot results for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + ">");
         for (ConcertSession session : abc.getConcert().getSessions()) {
             ballotService.randomiseBallotForConcertSessionIdAndCategoryId(session.getId(), categoryId);
         }
@@ -73,7 +77,7 @@ public class ActiveBallotCategoryService {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
 
-        System.out.println("Scheduling purchase window for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + ">");
+        logger.info("Scheduling purchase window for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + ">");
         for (ConcertSession session : abc.getConcert().getSessions()) {
             ballotService.openNextPurchaseWindow(session.getId(), categoryId);
         }

@@ -10,12 +10,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.concertSession.ConcertSession;
+import com.cs203g3.ticketing.concertSession.ConcertSessionRepository;
 import com.cs203g3.ticketing.email.EmailService;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 import com.cs203g3.ticketing.payment.dto.PaymentMetadataDto;
 import com.cs203g3.ticketing.receipt.Receipt;
 import com.cs203g3.ticketing.receipt.ReceiptService;
 import com.cs203g3.ticketing.receipt.dto.ReceiptRequestDto;
+import com.cs203g3.ticketing.section.Section;
+import com.cs203g3.ticketing.section.SectionRepository;
+import com.cs203g3.ticketing.security.jwt.AuthEntryPointJwt;
 import com.cs203g3.ticketing.ticket.Ticket;
 import com.cs203g3.ticketing.ticket.TicketRepository;
 import com.cs203g3.ticketing.user.User;
@@ -37,21 +41,26 @@ public class PaymentService {
 
     private ModelMapper modelMapper;
 
+    private ConcertSessionRepository concertSessions;
+    private SectionRepository sections;
     private TicketRepository tickets;
-
     private UserRepository users;
 
+    private EmailService emailService;
     private ReceiptService receiptService;
 
-    private EmailService emailService;
-
-    public PaymentService(ModelMapper modelMapper, TicketRepository tickets, ReceiptService rs, EmailService es, UserRepository users) {
+    public PaymentService(ModelMapper modelMapper,
+            ConcertSessionRepository concertSessions, SectionRepository sections,TicketRepository tickets, UserRepository users,
+            EmailService es, ReceiptService rs) {
         this.modelMapper = modelMapper;
 
+        this.concertSessions = concertSessions;
+        this.sections = sections;
         this.tickets = tickets;
-        this.receiptService = rs;
-        this.emailService = es;
         this.users = users;
+
+        this.emailService = es;
+        this.receiptService = rs;
     }
 
     private Session processStripePayloadAndGetSession(String stripeSignature, String stripePayload) {
@@ -84,21 +93,30 @@ public class PaymentService {
 
         User user = users.findById(paymentDto.getUserId()).orElseThrow(() -> new ResourceNotFoundException(User.class, paymentDto.getUserId()));
 
+        // Verify values given in payload
+        Long concertSessionId = paymentDto.getConcertSessionId();
+        ConcertSession concertSession = concertSessions.findById(concertSessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
+        Long sectionId = paymentDto.getSectionId();
+        sections.findByCategoryVenueAndId(concertSession.getConcert().getVenue(), sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
+
+        // Generate receipt
         ReceiptRequestDto newReceiptDto = new ReceiptRequestDto(
             paymentDto.getUserId(),
             BigDecimal.valueOf(checkoutSession.getAmountTotal()));
         Receipt newReceipt = receiptService.addReceipt(newReceiptDto);
 
+        // Retrieve tickets
         Integer ticketsBought = paymentDto.getTicketsBought();
         List<Ticket> ticketList = tickets.findAllByConcertSessionIdAndSeatSectionIdAndReceiptIsNullOrderBySeatSeatRowAscSeatSeatNumberAsc(
-            paymentDto.getConcertSessionId(),
-            paymentDto.getSectionId(),
-            PageRequest.of(0, ticketsBought));
+            concertSessionId,
+            sectionId,
+            PageRequest.of(0, ticketsBought)); // Limits the query to only return the correct (ticketsBought) number of tickets 
 
         if (ticketList.size() != ticketsBought) {
             throw new ResourceNotFoundException("Insufficient available tickets to fulfill this request!");
         }
 
+        // Attach tickets to purchase
         ticketList.forEach(ticket -> ticket.setReceipt(newReceipt));
         tickets.saveAll(ticketList);
 
