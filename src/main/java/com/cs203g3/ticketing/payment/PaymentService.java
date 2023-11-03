@@ -50,7 +50,8 @@ public class PaymentService {
     private ReceiptService receiptService;
 
     public PaymentService(ModelMapper modelMapper,
-            ConcertSessionRepository concertSessions, SectionRepository sections,TicketRepository tickets, UserRepository users,
+            ConcertSessionRepository concertSessions, SectionRepository sections, TicketRepository tickets,
+            UserRepository users,
             EmailService es, ReceiptService rs) {
         this.modelMapper = modelMapper;
 
@@ -63,15 +64,58 @@ public class PaymentService {
         this.receiptService = rs;
     }
 
+    /**
+     * Processes a Stripe payload, verifies its signature, and retrieves the
+     * checkout session.
+     *
+     * @param stripeSignature The Stripe signature for webhook verification.
+     * @param stripePayload   The Stripe payload containing payment information.
+     * @return The checkout session obtained from the Stripe payload.
+     * @throws StripeSignatureVerificationException If the Stripe webhook signature
+     *                                              cannot be verified.
+     * @throws StripeDeserializationException       If there is an issue
+     *                                              deserializing the Stripe
+     *                                              payload.
+     * @throws StripeUnknownEventException          If the event type in the payload
+     *                                              is not
+     *                                              "checkout.session.completed."
+     *
+     *                                              This method processes a Stripe
+     *                                              payload and verifies its
+     *                                              signature. It then extracts and
+     *                                              returns the checkout session
+     *                                              contained within the payload. If
+     *                                              any verification or
+     *                                              deserialization issues occur,
+     *                                              exceptions are thrown
+     *                                              accordingly.
+     *
+     * @param stripeSignature The Stripe signature for webhook verification.
+     * @param stripePayload   The Stripe payload containing payment information.
+     *
+     * @return The checkout session extracted from the Stripe payload.
+     *
+     * @throws StripeSignatureVerificationException If the Stripe webhook signature
+     *                                              cannot be verified.
+     * @throws StripeDeserializationException       If there is an issue
+     *                                              deserializing the Stripe
+     *                                              payload.
+     * @throws StripeUnknownEventException          If the event type in the payload
+     *                                              is not
+     *                                              "checkout.session.completed."
+     */
+
     private Session processStripePayloadAndGetSession(String stripeSignature, String stripePayload) {
         Event event = null;
         // Use this line instead of Webhook.constructEvent() if no signature
         event = ApiResource.GSON.fromJson(stripePayload, Event.class);
 
         // try {
-        //     event = Webhook.constructEvent(stripePayload, stripeSignature, endpointSecret);
+        // event = Webhook.constructEvent(stripePayload, stripeSignature,
+        // endpointSecret);
         // } catch (SignatureVerificationException e) {
-        //     throw new StripeSignatureVerificationException("Error verifying Stripe webhook signature: " + e.getMessage());
+        // throw new StripeSignatureVerificationException("Error verifying Stripe
+        // webhook signature: " + e.getMessage());
         // }
 
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
@@ -86,31 +130,48 @@ public class PaymentService {
         return (Session) dataObjectDeserializer.getObject().get();
     }
 
+    /**
+     * Processes a completed payment for a Stripe checkout session, including
+     * verifying the payment details,
+     * generating a receipt, and sending a purchase confirmation email with attached
+     * tickets.
+     *
+     * @param stripeSignature The Stripe signature for webhook verification.
+     * @param stripePayload   The Stripe payload containing payment information.
+     * @throws IOException               If an I/O error occurs.
+     * @throws ResourceNotFoundException If a resource (e.g., User, ConcertSession,
+     *                                   Section) is not found.
+     */
     @Transactional
     public void processPaymentCompleted(String stripeSignature, String stripePayload) throws IOException {
         Session checkoutSession = processStripePayloadAndGetSession(stripeSignature, stripePayload);
         PaymentMetadataDto paymentDto = modelMapper.map(checkoutSession.getMetadata(), PaymentMetadataDto.class);
 
-        User user = users.findById(paymentDto.getUserId()).orElseThrow(() -> new ResourceNotFoundException(User.class, paymentDto.getUserId()));
+        User user = users.findById(paymentDto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(User.class, paymentDto.getUserId()));
 
         // Verify values given in payload
         Long concertSessionId = paymentDto.getConcertSessionId();
-        ConcertSession concertSession = concertSessions.findById(concertSessionId).orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
+        ConcertSession concertSession = concertSessions.findById(concertSessionId)
+                .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
         Long sectionId = paymentDto.getSectionId();
-        sections.findByCategoryVenueAndId(concertSession.getConcert().getVenue(), sectionId).orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
+        sections.findByCategoryVenueAndId(concertSession.getConcert().getVenue(), sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
 
         // Generate receipt
         ReceiptRequestDto newReceiptDto = new ReceiptRequestDto(
-            paymentDto.getUserId(),
-            BigDecimal.valueOf(checkoutSession.getAmountTotal()));
+                paymentDto.getUserId(),
+                BigDecimal.valueOf(checkoutSession.getAmountTotal()));
         Receipt newReceipt = receiptService.addReceipt(newReceiptDto);
 
         // Retrieve tickets
         Integer ticketsBought = paymentDto.getTicketsBought();
-        List<Ticket> ticketList = tickets.findAllByConcertSessionIdAndSeatSectionIdAndReceiptIsNullOrderBySeatSeatRowAscSeatSeatNumberAsc(
-            concertSessionId,
-            sectionId,
-            PageRequest.of(0, ticketsBought)); // Limits the query to only return the correct (ticketsBought) number of tickets 
+        List<Ticket> ticketList = tickets
+                .findAllByConcertSessionIdAndSeatSectionIdAndReceiptIsNullOrderBySeatSeatRowAscSeatSeatNumberAsc(
+                        concertSessionId,
+                        sectionId,
+                        PageRequest.of(0, ticketsBought)); // Limits the query to only return the correct
+                                                           // (ticketsBought) number of tickets
 
         if (ticketList.size() != ticketsBought) {
             throw new ResourceNotFoundException("Insufficient available tickets to fulfill this request!");
@@ -120,6 +181,7 @@ public class PaymentService {
         ticketList.forEach(ticket -> ticket.setReceipt(newReceipt));
         tickets.saveAll(ticketList);
 
-        emailService.sendPurchaseConfirmationWithTicketEmail(user, ticketList.toArray(new Ticket[0]), newReceipt, ticketList.get(0).getConcertSession());
+        emailService.sendPurchaseConfirmationWithTicketEmail(user, ticketList.toArray(new Ticket[0]), newReceipt,
+                ticketList.get(0).getConcertSession());
     }
 }

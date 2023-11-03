@@ -41,6 +41,10 @@ public class JwtUtils {
                 .compact();
     }
 
+    /**
+     * Get Private Key (Jwt Secret)
+     * @return Key private key
+     */
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -55,6 +59,11 @@ public class JwtUtils {
                 .getSubject();
     }
 
+    /**
+     * Validate JWT token, if jwt token is invalid, return false, else return true. 
+     * @param authToken a jwt token that needs validation
+     * @return whether token is valid
+     */
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder()

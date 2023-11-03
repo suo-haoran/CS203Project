@@ -2,6 +2,7 @@ package com.cs203g3.ticketing.email;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -59,32 +60,53 @@ public class EmailService {
 
         String ticketPath = attachmentService.generateTickets(user, tickets, session);
         String receiptPath = attachmentService.generateReceipt(user, tickets, session, receipt);
-        sendEmailWithAttachments(to, subject, text, ticketPath, receiptPath);
+
+        Email email = new Email(to, subject, text, new Attachment[] { new Attachment("ticket.html", ticketPath),
+                new Attachment("receipt.html", receiptPath) });
+
+        sendEmailWithAttachments(email);
     }
 
+    /**
+     * Sends a simple email with the specified recipient, subject, and text content.
+     *
+     * @param to      The recipient's email address.
+     * @param subject The subject of the email.
+     * @param text    The text content of the email.
+     */
     private void sendSimpleEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailServerUsername);
-        message.setTo(to); 
-        message.setSubject(subject); 
+        message.setTo(to);
+        message.setSubject(subject);
         message.setText(text);
         mailSender.send(message);
     }
 
-    private void sendEmailWithAttachments(
-            String to, String subject, String text, String ticketPath, String receiptPath) {
+    /**
+     * Sends an email with attachments, using the provided Email object containing
+     * recipient,
+     * subject, body, and attachments information.
+     *
+     * @param email The Email object containing email details, including recipient,
+     *              subject, body, and attachments.
+     * @throws EmailException If there is an issue with sending the email.
+     */
+    private void sendEmailWithAttachments(Email email) {
         MimeMessage message = mailSender.createMimeMessage();
 
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setFrom(mailServerUsername);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(text);
-            FileSystemResource ticket = new FileSystemResource(new File(ticketPath));
-            helper.addAttachment("Ticket.html", ticket);
-            FileSystemResource receipt = new FileSystemResource(new File(receiptPath));
-            helper.addAttachment("Receipt.html", receipt);
+            helper.setTo(email.getTo());
+            helper.setSubject(email.getSubject());
+            helper.setText(email.getBody());
+
+            for (Attachment attachment : email.getAttachments()) {
+                FileSystemResource file = new FileSystemResource(new File(attachment.getFilePath()));
+                helper.addAttachment(attachment.getFileName(), file);
+            }
+
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new EmailException("Failed to send email");

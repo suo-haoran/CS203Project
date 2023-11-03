@@ -67,6 +67,14 @@ public class BallotService {
         this.emailService = emailService;
     }
 
+      /**
+     * Verifies the validity of a given concert session ID and category ID.
+     * Throws a ResourceNotFoundException if either the concert session or category does not exist.
+     *
+     * @param concertSessionId The ID of the concert session to be verified.
+     * @param categoryId The ID of the category to be verified.
+     * @throws ResourceNotFoundException If the concert session or category is not found.
+     */
     public void verifyValidConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
         ConcertSession cs = concertSessions.findById(concertSessionId)
             .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
@@ -74,6 +82,13 @@ public class BallotService {
             .orElseThrow(() -> new ResourceNotFoundException(Category.class, categoryId));
     }
 
+    /**
+     * Retrieves a list of ballots by concert session and category.
+     *
+     * @param concertSessionId The ID of the concert session.
+     * @param categoryId The ID of the category.
+     * @return A list of BallotResponseDto objects representing the ballots for the given session and category.
+     */
     public List<BallotResponseDto> getAllBallotsByConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
         verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
 
@@ -82,6 +97,16 @@ public class BallotService {
             .collect(Collectors.toList());
     }
 
+     /**
+     * Adds a new ballot for a user, concert session, and category.
+     * Also sends a confirmation email to the user.
+     *
+     * @param userDetails The user details.
+     * @param concertSessionId The ID of the concert session.
+     * @param categoryId The ID of the category.
+     * @return A BallotResponseDto representing the newly added ballot.
+     * @throws ResourceAlreadyExistsException If the user has already joined the same balloting session.
+     */
     public BallotResponseDto addBallot(UserDetailsImpl userDetails, Long concertSessionId, Long categoryId) {
         Long userId = userDetails.getId();
 
@@ -108,6 +133,12 @@ public class BallotService {
         }
     }
 
+    /**
+     * Randomizes the order of received ballots for a specific concert session and category.
+     *
+     * @param concertSessionId The ID of the concert session.
+     * @param categoryId The ID of the category.
+     */
     public void randomiseBallotForConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
         verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
 
@@ -121,6 +152,14 @@ public class BallotService {
         ballots.saveAll(receivedBallots);
     }
 
+
+    /**
+     * Closes the current purchase window for ballots in a specific concert session and category.
+     * Sets the purchaseAllowed attribute to WINDOW_OVER for all eligible ballots.
+     *
+     * @param concertSessionId The ID of the concert session.
+     * @param categoryId The ID of the category.
+     */
     // Set purchaseAllowed to WINDOW_OVER for ballots in the current window
     // Current window => Ballots with purchaseAllowed = ALLOWED
     private void closeCurrentPurchaseWindow(Long concertSessionId, Long categoryId) {
@@ -135,15 +174,23 @@ public class BallotService {
         logger.info("Window for sessionId #<" + concertSessionId + "> closed for <" + ballotsInWindow.size() + "> users");
     }
 
-    // Set purchaseAllowed to ALLOWED for the next X # of ballots that have purchaseAllowed = NOT_YET
-    // X = # of seats still left unpurchased
-    // Also closes the current purchase window
+
+    /**
+     * Opens the next purchase window for ballots in a specific concert session and category.
+     * Sets the purchaseAllowed attribute to ALLOWED for the next set of eligible ballots.
+     *
+     * @param concertSessionId The ID of the concert session.
+     * @param categoryId The ID of the category.
+     */    
     public void openNextPurchaseWindow(Long concertSessionId, Long categoryId) {
         verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
+        // closes the current purchase window
         closeCurrentPurchaseWindow(concertSessionId, categoryId);
 
         Integer availableSeats = tickets.countByConcertSessionIdAndReceiptIsNull(concertSessionId);
-
+        
+        // Set purchaseAllowed to ALLOWED for the next X # of ballots that have purchaseAllowed = NOT_YET
+        // X = # of seats still left unpurchased
         List<Ballot> ballotsForNextWindow = ballots.findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
             concertSessionId, categoryId, EnumPurchaseAllowed.NOT_YET, PageRequest.of(0, availableSeats));
 

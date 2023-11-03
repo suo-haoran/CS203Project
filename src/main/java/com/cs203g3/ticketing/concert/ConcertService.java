@@ -27,24 +27,48 @@ public class ConcertService {
         this.venues = venues;
     }
 
+    /**
+     * Retrieves a list of all concerts available in the application.
+     *
+     * @return A list of ConcertResponseDto objects representing all concerts.
+     */
     public List<ConcertResponseDto> getAllConcerts() {
         return concerts.findAll().stream()
-            .map(concert -> modelMapper.map(concert, ConcertResponseDto.class))
-            .collect(Collectors.toList());
+                .map(concert -> modelMapper.map(concert, ConcertResponseDto.class))
+                .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a list of concerts with non-null sessions, indicating concerts with scheduled sessions.
+     *
+     * @return A list of ConcertResponseDto objects representing concerts with scheduled sessions.
+     */
     public List<ConcertResponseDto> getAllConcertsBySessionsNotNull() {
         return concerts.findAllBySessionsNotNull().stream()
-            .map(concert -> modelMapper.map(concert, ConcertResponseDto.class))
-            .collect(Collectors.toList());
+                .map(concert -> modelMapper.map(concert, ConcertResponseDto.class))
+                .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a specific concert by its ID.
+     *
+     * @param id The ID of the concert to retrieve.
+     * @return A ConcertResponseDto representing the requested concert.
+     * @throws ResourceNotFoundException If the specified concert does not exist.
+     */
     public ConcertResponseDto getConcert(Long id) {
         return concerts.findById(id).map(concert -> {
             return modelMapper.map(concert, ConcertResponseDto.class);
         }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, id));
-    } 
+    }
 
+    /**
+     * Adds a new concert to the application.
+     *
+     * @param concertRequestDto The ConcertRequestDto containing the details of the new concert.
+     * @return The newly added Concert object.
+     * @throws ResourceNotFoundException If the specified venue for the concert does not exist.
+     */
     public Concert addConcert(ConcertRequestDto concertRequestDto) {
         Long venueId = concertRequestDto.getVenueId();
         Concert newConcert = modelMapper.map(concertRequestDto, Concert.class);
@@ -55,6 +79,14 @@ public class ConcertService {
         }).orElseThrow(() -> new ResourceNotFoundException(Venue.class, venueId));
     }
 
+    /**
+     * Updates an existing concert's information.
+     *
+     * @param id The ID of the concert to update.
+     * @param concertRequestDto The ConcertRequestDto with the updated concert details.
+     * @return The updated Concert object.
+     * @throws ResourceNotFoundException If the specified concert or venue does not exist.
+     */
     public Concert updateConcert(Long id, ConcertRequestDto concertRequestDto) {
         Long venueId = concertRequestDto.getVenueId();
         Concert newConcert = modelMapper.map(concertRequestDto, Concert.class);
@@ -68,6 +100,11 @@ public class ConcertService {
         }).orElseThrow(() -> new ResourceNotFoundException(Concert.class, id));
     }
 
+    /**
+     * Deletes a concert from the application by its ID.
+     *
+     * @param id The ID of the concert to delete.
+     */
     public void deleteConcert(Long id) {
         concerts.deleteById(id);
     }

@@ -18,13 +18,17 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
     private static Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
+    // Inject a HandlerExceptionResolver to handle exceptions
     @Autowired
     @Qualifier("handlerExceptionResolver")
     private HandlerExceptionResolver resolver;
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException){
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
+        // Log an error message indicating an unauthorized error and include the error message from the AuthenticationException
         logger.error("Unauthorised error: {}", authException.getMessage());
+        
+        // Use the HandlerExceptionResolver to handle the authentication exception by resolving it and sending an appropriate response
         resolver.resolveException(request, response, null, authException);
     }
 

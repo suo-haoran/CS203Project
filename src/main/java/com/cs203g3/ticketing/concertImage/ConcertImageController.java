@@ -27,6 +27,12 @@ public class ConcertImageController {
         this.concertImageService = cis;
     }
 
+    /**
+     * Retrieves a list of file download URIs for all images associated with a specific concert.
+     *
+     * @param concertId The ID of the concert for which to retrieve images.
+     * @return A list of String values representing the download URIs for the images.
+     */
     @GetMapping
     public List<String> getFileList(@PathVariable Long concertId) {
         return concertImageService.getConcertImageByConcert(concertId)

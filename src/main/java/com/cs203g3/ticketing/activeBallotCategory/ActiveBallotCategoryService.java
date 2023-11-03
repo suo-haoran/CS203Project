@@ -41,10 +41,25 @@ public class ActiveBallotCategoryService {
         this.ballotService = ballotService;
     }
 
+    /**
+     * Retrieves a list of all active ballot categories in the application.
+     *
+     * @return A list of ActiveBallotCategory objects representing all active ballot categories.
+     */
     public List<ActiveBallotCategory> getAllActiveBallotCategories() {
         return activeBallotCategories.findAll();
     }
 
+    /**
+     * Adds a new active ballot category for a specific concert and category.
+     * Schedules the closure of the active ballot category based on the provided time interval.
+     *
+     * @param concertId The ID of the concert.
+     * @param categoryId The ID of the category.
+     * @param dto The ActiveBallotCategoryRequestDto containing the closure time.
+     * @return The newly added ActiveBallotCategory object.
+     * @throws ResourceNotFoundException If the specified concert or category does not exist.
+     */
     private void scheduleActiveBallotClosing(ActiveBallotCategory abc, Integer secondsBeforeClosure) {
         taskScheduler.schedule(
             () -> {
