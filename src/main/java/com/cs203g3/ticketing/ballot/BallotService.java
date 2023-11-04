@@ -51,10 +51,10 @@ public class BallotService {
     private final int WINDOW_ROTATION_IN_SECONDS = 60 * 60 * 24; // 24 hours
 
     public BallotService(
-        ModelMapper modelMapper, TaskScheduler taskScheduler,
-        BallotRepository ballots, CategoryRepository categories, ConcertSessionRepository concertSessions,
-        TicketRepository tickets, UserRepository users,
-        EmailService emailService) {
+            ModelMapper modelMapper, TaskScheduler taskScheduler,
+            BallotRepository ballots, CategoryRepository categories, ConcertSessionRepository concertSessions,
+            TicketRepository tickets, UserRepository users,
+            EmailService emailService) {
         this.modelMapper = modelMapper;
         this.taskScheduler = taskScheduler;
 
@@ -67,55 +67,62 @@ public class BallotService {
         this.emailService = emailService;
     }
 
-      /**
+    /**
      * Verifies the validity of a given concert session ID and category ID.
-     * Throws a ResourceNotFoundException if either the concert session or category does not exist.
+     * Throws a ResourceNotFoundException if either the concert session or category
+     * does not exist.
      *
      * @param concertSessionId The ID of the concert session to be verified.
-     * @param categoryId The ID of the category to be verified.
-     * @throws ResourceNotFoundException If the concert session or category is not found.
+     * @param categoryId       The ID of the category to be verified.
+     * @throws ResourceNotFoundException If the concert session or category is not
+     *                                   found.
      */
     public void verifyValidConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
         ConcertSession cs = concertSessions.findById(concertSessionId)
-            .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
+                .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
         categories.findByVenueAndId(cs.getConcert().getVenue(), categoryId)
-            .orElseThrow(() -> new ResourceNotFoundException(Category.class, categoryId));
+                .orElseThrow(() -> new ResourceNotFoundException(Category.class, categoryId));
     }
 
     /**
      * Retrieves a list of ballots by concert session and category.
      *
      * @param concertSessionId The ID of the concert session.
-     * @param categoryId The ID of the category.
-     * @return A list of BallotResponseDto objects representing the ballots for the given session and category.
+     * @param categoryId       The ID of the category.
+     * @return A list of BallotResponseDto objects representing the ballots for the
+     *         given session and category.
      */
-    public List<BallotResponseDto> getAllBallotsByConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
+    public List<BallotResponseDto> getAllBallotsByConcertSessionIdAndCategoryId(Long concertSessionId,
+            Long categoryId) {
         verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
 
         return ballots.findAllByConcertSessionIdAndCategoryId(concertSessionId, categoryId).stream()
-            .map(ballot -> modelMapper.map(ballot, BallotResponseDto.class))
-            .collect(Collectors.toList());
+                .map(ballot -> modelMapper.map(ballot, BallotResponseDto.class))
+                .collect(Collectors.toList());
     }
 
-     /**
+    /**
      * Adds a new ballot for a user, concert session, and category.
      * Also sends a confirmation email to the user.
      *
-     * @param userDetails The user details.
+     * @param userDetails      The user details.
      * @param concertSessionId The ID of the concert session.
-     * @param categoryId The ID of the category.
+     * @param categoryId       The ID of the category.
      * @return A BallotResponseDto representing the newly added ballot.
-     * @throws ResourceAlreadyExistsException If the user has already joined the same balloting session.
+     * @throws ResourceAlreadyExistsException If the user has already joined the
+     *                                        same balloting session.
      */
     public BallotResponseDto addBallot(UserDetailsImpl userDetails, Long concertSessionId, Long categoryId) {
         Long userId = userDetails.getId();
 
         User user = users.findById(userId).orElseThrow(() -> new ResourceNotFoundException(User.class, userId));
         ConcertSession concertSession = concertSessions.findById(concertSessionId)
-            .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
+                .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
         Category category = categories
-            .findByVenueAndIdAndActiveBallotCategoriesConcertSessions(concertSession.getConcert().getVenue(), categoryId, concertSession)
-            .orElseThrow(() -> new ResourceNotFoundException("This category is either not available for balloting now or does not exist at all"));
+                .findByVenueAndIdAndActiveBallotCategoriesConcertSessions(concertSession.getConcert().getVenue(),
+                        categoryId, concertSession)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "This category is either not available for balloting now or does not exist at all"));
 
         Ballot newBallot = new Ballot(user, concertSession, category);
 
@@ -134,10 +141,11 @@ public class BallotService {
     }
 
     /**
-     * Randomizes the order of received ballots for a specific concert session and category.
+     * Randomizes the order of received ballots for a specific concert session and
+     * category.
      *
      * @param concertSessionId The ID of the concert session.
-     * @param categoryId The ID of the category.
+     * @param categoryId       The ID of the category.
      */
     public void randomiseBallotForConcertSessionIdAndCategoryId(Long concertSessionId, Long categoryId) {
         verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
@@ -152,47 +160,52 @@ public class BallotService {
         ballots.saveAll(receivedBallots);
     }
 
-
     /**
-     * Closes the current purchase window for ballots in a specific concert session and category.
+     * Closes the current purchase window for ballots in a specific concert session
+     * and category.
      * Sets the purchaseAllowed attribute to WINDOW_OVER for all eligible ballots.
      *
      * @param concertSessionId The ID of the concert session.
-     * @param categoryId The ID of the category.
+     * @param categoryId       The ID of the category.
      */
     // Set purchaseAllowed to WINDOW_OVER for ballots in the current window
     // Current window => Ballots with purchaseAllowed = ALLOWED
     private void closeCurrentPurchaseWindow(Long concertSessionId, Long categoryId) {
-        List<Ballot> ballotsInWindow = ballots.findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
-            concertSessionId, categoryId, EnumPurchaseAllowed.ALLOWED);
+        List<Ballot> ballotsInWindow = ballots
+                .findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
+                        concertSessionId, categoryId, EnumPurchaseAllowed.ALLOWED);
 
         for (Ballot ballot : ballotsInWindow) {
             ballot.setPurchaseAllowed(EnumPurchaseAllowed.WINDOW_OVER);
         }
         ballots.saveAll(ballotsInWindow);
 
-        logger.info("Window for sessionId #<" + concertSessionId + "> closed for <" + ballotsInWindow.size() + "> users");
+        logger.info(
+                "Window for sessionId #<" + concertSessionId + "> closed for <" + ballotsInWindow.size() + "> users");
     }
 
-
     /**
-     * Opens the next purchase window for ballots in a specific concert session and category.
-     * Sets the purchaseAllowed attribute to ALLOWED for the next set of eligible ballots.
+     * Opens the next purchase window for ballots in a specific concert session and
+     * category.
+     * Sets the purchaseAllowed attribute to ALLOWED for the next set of eligible
+     * ballots.
      *
      * @param concertSessionId The ID of the concert session.
-     * @param categoryId The ID of the category.
-     */    
+     * @param categoryId       The ID of the category.
+     */
     public void openNextPurchaseWindow(Long concertSessionId, Long categoryId) {
         verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
         // closes the current purchase window
         closeCurrentPurchaseWindow(concertSessionId, categoryId);
 
         Integer availableSeats = tickets.countByConcertSessionIdAndReceiptIsNull(concertSessionId);
-        
-        // Set purchaseAllowed to ALLOWED for the next X # of ballots that have purchaseAllowed = NOT_YET
+
+        // Set purchaseAllowed to ALLOWED for the next X # of ballots that have
+        // purchaseAllowed = NOT_YET
         // X = # of seats still left unpurchased
-        List<Ballot> ballotsForNextWindow = ballots.findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
-            concertSessionId, categoryId, EnumPurchaseAllowed.NOT_YET, PageRequest.of(0, availableSeats));
+        List<Ballot> ballotsForNextWindow = ballots
+                .findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
+                        concertSessionId, categoryId, EnumPurchaseAllowed.NOT_YET, PageRequest.of(0, availableSeats));
 
         if (availableSeats <= 0 || ballotsForNextWindow.size() <= 0) {
             logger.info("No more available seats/ballots for next window, stopping here");
@@ -202,17 +215,20 @@ public class BallotService {
         for (Ballot ballot : ballotsForNextWindow) {
             ballot.setPurchaseAllowed(EnumPurchaseAllowed.ALLOWED);
             emailService.sendBallotingSuccessEmail(
-                ballot.getUser(),
-                ballot.getConcertSession(), 
-                String.format("https://%s/ticket?concertSession=%ld&category=%ld", frontendUrl, concertSessionId, categoryId)
-            );
+                    ballot.getUser(),
+                    ballot.getConcertSession(),
+                    String.format("%s/ticket?userId=%d&concert=%d&concertSession=%d&category=%d&venue=%d", frontendUrl,
+                            ballot.getUser().getId(), ballot.getConcertSession().getConcert().getId(), concertSessionId, categoryId,
+                            ballot.getConcertSession().getConcert().getVenue().getId()));
         }
         ballots.saveAll(ballotsForNextWindow);
-        logger.info("Window for sessionId #<" + concertSessionId + "> successfully opened for next <" + ballotsForNextWindow.size() + "> users");
+        logger.info("Window for sessionId #<" + concertSessionId + "> successfully opened for next <"
+                + ballotsForNextWindow.size() + "> users");
 
         taskScheduler.schedule(() -> {
             openNextPurchaseWindow(concertSessionId, categoryId);
         }, Instant.now().plusSeconds(WINDOW_ROTATION_IN_SECONDS));
-        logger.info("Next window rotation for sessionId #<" + concertSessionId + "> scheduled in " + WINDOW_ROTATION_IN_SECONDS + " seconds");
+        logger.info("Next window rotation for sessionId #<" + concertSessionId + "> scheduled in "
+                + WINDOW_ROTATION_IN_SECONDS + " seconds");
     }
 }
