@@ -118,12 +118,32 @@ DROP PROCEDURE IF EXISTS INSERTSEATS;
 
 INSERT INTO concert (title, venue_id, description, artist) VALUES
 ('IU "Real Fantasy" SG', 1, 'IU\'s "Real Fantasy" Tour in Singapore', 'IU'),
-('Landau\'s Glory', 2, 'The siblings of Landau bringing you the pride & passion of Belobog through Rock n\' Roll', 'Serval & Gepard');
+('MAYDAY NOWHERE Re: Live 2024 SINGAPORE TOUR', 1, 'MAYDAY NOWHERE Re: Live 2024 SINGAPORE TOUR', 'MAYDAY'),
+('JOKER XUE "EXTRATERRESTRIAL" WORLD TOUR LIVE IN SINGAPORE', 1, 'Joker Xue "Extraterrestrial" World Tour Live in Singapore will be held at the Singapore Indoor Stadium at 7pm on January 6, 2024 (Saturday)! It is reported that this will be Joker Xue\'s first solo concert in 2024.', 'Joker Xue'),
+('Eric Chou [Odyssey~Journey RETURNS] Tour Encore – Singapore', 1, 'The New King of Music Creation in Asia returns! Eric Chou [Odyssey~Journey RETURNS] Tour Encore – Singapore will return on 4 and 5 November 2023 at the Singapore Indoor Stadium', 'Eric Chou'), 
+('Ed Sheeran: +-=÷x Tour in Singapore', 1, 'Ed Sheeran: + - = ÷ x Tour in Singapore is presented by UOB and supported by KrisFlyer as the official sponsor, promoted by AEG Presents Asia. The show in Singapore will take place on 16 February 2024 at the National Stadium, Singapore Sports Hub. Tickets priced from S$88 onwards.', 'Ed Sheeran');
+
 
 INSERT INTO category_price (concert_id, category_id, price) VALUES
 (1, 1, 348), (1, 2, 328), (1, 3, 308),
 (1, 4, 288), (1, 5, 288), (1, 6, 248),
 (1, 7, 204), (1, 8, 178), (1, 9, 248),
-(1, 10, 178);
+(1, 10, 178), 
+(2, 1, 599), (2, 2, 699), (2, 3, 499),
+(2, 4, 399), (2, 5, 399), (2, 6, 299),
+(2, 7, 299), (2, 8, 399), (2, 9, 499),
+(2, 10, 199),
+(3, 1, 368), (3, 2, 328), (3, 3, 298),
+(3, 4, 268), (3, 5, 238), (3, 6, 198),
+(3, 7, 168), (3, 8, 108), (3, 9, 108),
+(3, 10, 108),
+(4, 1, 599), (4, 2, 699), (4, 3, 499),
+(4, 4, 399), (4, 5, 399), (4, 6, 299),
+(4, 7, 299), (4, 8, 399), (4, 9, 499),
+(4, 10, 199),
+(5, 1, 599), (5, 2, 699), (5, 3, 499),
+(5, 4, 399), (5, 5, 399), (5, 6, 299),
+(5, 7, 299), (5, 8, 399), (5, 9, 499),
+(5, 10, 199);
 
 -- Concert Image need to upload via postman manually.
