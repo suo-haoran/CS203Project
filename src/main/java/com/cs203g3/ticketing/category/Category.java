@@ -24,7 +24,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class Category extends BaseEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -40,10 +40,12 @@ public class Category extends BaseEntity {
     @JoinColumn(name="venueId")
     private Venue venue;
 
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy="category", cascade=CascadeType.ALL)
     private List<Section> sections;
 
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy="category", cascade=CascadeType.ALL)
     private List<ActiveBallotCategory> activeBallotCategories;

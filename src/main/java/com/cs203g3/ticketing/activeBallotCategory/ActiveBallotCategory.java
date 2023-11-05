@@ -11,13 +11,11 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=true)
 @IdClass(ActiveBallotCategoryKey.class)
 public class ActiveBallotCategory extends BaseEntity {
     @Id
@@ -33,5 +31,36 @@ public class ActiveBallotCategory extends BaseEntity {
     public ActiveBallotCategory(Concert concert, Category category) {
         this.concert = concert;
         this.category = category;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || this.getClass() != obj.getClass()) return false;
+
+        ActiveBallotCategory other = (ActiveBallotCategory) obj;
+
+        if (concert == null && other.concert != null) {
+            return false;
+        } else if (!concert.equals(other.concert)) {
+            return false;
+        }
+
+        if (category == null && other.category != null) {
+            return false;
+        } else if (!category.equals(other.category)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((concert == null) ? 0 : concert.hashCode());
+        result = prime * result + ((category == null) ? 0 : category.hashCode());
+        return result;
     }
 }

@@ -1,7 +1,10 @@
 package com.cs203g3.ticketing.activeBallotCategory;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
@@ -24,6 +27,7 @@ public class ActiveBallotCategoryService {
     private static Logger logger = LoggerFactory.getLogger(ActiveBallotCategoryService.class);
 
     private final TaskScheduler taskScheduler;
+    private Map<ActiveBallotCategory, ScheduledFuture<?>> scheduledTasks;
 
     private ActiveBallotCategoryRepository activeBallotCategories;
     private ConcertRepository concerts;
@@ -40,6 +44,8 @@ public class ActiveBallotCategoryService {
         this.concerts = concerts;
         this.categories = categories;
         this.ballotService = ballotService;
+
+        this.scheduledTasks = new HashMap<>();
     }
 
     /**
@@ -52,29 +58,28 @@ public class ActiveBallotCategoryService {
     }
 
     /**
-     * Adds a new active ballot category for a specific concert and category.
-     * Schedules the closure of the active ballot category based on the provided time interval.
+     * Handles the scheduled closing of an active ballot cateogory
      *
-     * @param concertId The ID of the concert.
-     * @param categoryId The ID of the category.
-     * @param dto The ActiveBallotCategoryRequestDto containing the closure time.
-     * @return The newly added ActiveBallotCategory object.
-     * @throws ResourceNotFoundException If the specified concert or category does not exist.
+     * @param abc The ActiveBallotCategory to be closed
+     * @param secondsBeforeClosure No. of seconds before task (closing ABC) is ran
+     * @return void
      */
     private void scheduleActiveBallotClosing(ActiveBallotCategory abc, Integer secondsBeforeClosure) {
         // This line fetches all the ConcertSessions before the Hibernate transaction closes
         Hibernate.initialize(abc.getConcert().getSessions());
 
-        taskScheduler.schedule(
+        ScheduledFuture<?> task = taskScheduler.schedule(
             () -> {
-                deleteActiveBallotCategory(abc);
+                deleteActiveBallotCategoryScheduled(abc);
                 randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
                 scheduleOpeningNextPurchaseWindow(abc);
             },
             Instant.now().plusSeconds(secondsBeforeClosure));
+
+        scheduledTasks.put(abc, task);
     }
 
-    private void deleteActiveBallotCategory(ActiveBallotCategory abc) {
+    private void deleteActiveBallotCategoryScheduled(ActiveBallotCategory abc) {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
 
@@ -102,6 +107,16 @@ public class ActiveBallotCategoryService {
         }
     }
 
+    /**
+     * Adds a new active ballot category for a specific concert and category.
+     * Schedules the closure of the active ballot category based on the provided time interval.
+     *
+     * @param concertId The ID of the concert.
+     * @param categoryId The ID of the category.
+     * @param dto The ActiveBallotCategoryRequestDto containing the closure time.
+     * @return The newly added ActiveBallotCategory object.
+     * @throws ResourceNotFoundException If the specified concert or category does not exist.
+     */
     public ActiveBallotCategory addActiveBallotCategory(Long concertId, Long categoryId, ActiveBallotCategoryRequestDto dto) {
         Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
         Category category = categories.findByVenueAndId(concert.getVenue(), categoryId).orElseThrow(() -> new ResourceNotFoundException(Category.class, categoryId));
@@ -112,7 +127,28 @@ public class ActiveBallotCategoryService {
         return activeBallotCategory;
     }
 
-    // public void deleteActiveBallotCategory(Long concertId, Long categoryId) {
-    //     activeBallotCategories.deleteByConcertIdAndCategoryId(concertId, categoryId);
-    // }
+    /**
+     * Cancel the scheduled closure task for this ActiveBallotCategory
+     * The ActiveBallotCategory is also deleted
+     *
+     * @param concertId The ID of the concert.
+     * @param categoryId The ID of the category.
+     * @return void
+     * @throws ResourceNotFoundException If the specified ActiveBallotCategory does not exist.
+     */
+    public void handleScheduledTasksAndDeleteActiveBallotCategory(Long concertId, Long categoryId) {
+        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryId(concertId, categoryId)
+            .orElseThrow(() -> new ResourceNotFoundException("This category either is not in active balloting now or does not exist at all"));
+
+        // Cancel scheduled task
+        ScheduledFuture<?> task = scheduledTasks.get(abc);
+        task.cancel(false);
+
+        // Delete entity
+        activeBallotCategories.delete(abc);
+
+        // Handle post closing
+        randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
+        scheduleOpeningNextPurchaseWindow(abc);
+    }
 }

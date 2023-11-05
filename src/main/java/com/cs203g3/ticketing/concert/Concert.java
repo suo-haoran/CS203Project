@@ -16,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,7 +33,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class Concert extends BaseEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -58,19 +57,22 @@ public class Concert extends BaseEntity {
     @JoinColumn(name="venueId")
     private Venue venue;
 
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy="concert")
     private List<ActiveBallotCategory> activeBallotCategories;
 
-    // FetchType.EAGER here to allow iteration when handling ActiveBallot scheduling
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<ConcertSession> sessions;
 
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<CategoryPrice> categoryPrices;
 
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<ConcertImage> concertImages;
 

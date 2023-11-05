@@ -39,9 +39,9 @@ public class ActiveBallotCategoryController {
         return abcService.addActiveBallotCategory(concertId, categoryId, reqBody);
     }
 
-    // @DeleteMapping("/concerts/{concertId}/categories/{categoryId}/activeBallots")
-    // @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    // public void deleteActiveBallotCategory(@PathVariable Long concertId, @PathVariable Long categoryId) {
-    //     abcService.deleteActiveBallotCategory(concertId, categoryId);
-    // }
+    @DeleteMapping("/concerts/{concertId}/categories/{categoryId}/activeBallots")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void deleteActiveBallotCategory(@PathVariable Long concertId, @PathVariable Long categoryId) {
+        abcService.handleScheduledTasksAndDeleteActiveBallotCategory(concertId, categoryId);
+    }
 }

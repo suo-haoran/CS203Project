@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class Venue extends BaseEntity {
     
     @Id
@@ -37,10 +37,12 @@ public class Venue extends BaseEntity {
     @Size(min=3, max=255, message="Name length must be between 3 and 255")
     private String name;
 
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy="venue", cascade=CascadeType.ALL)
     private List<Concert> concerts;
 
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy="venue", cascade=CascadeType.ALL)
     private List<Category> categories;
