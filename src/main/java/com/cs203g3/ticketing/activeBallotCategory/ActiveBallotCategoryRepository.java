@@ -10,7 +10,4 @@ import jakarta.transaction.Transactional;
 
 public interface ActiveBallotCategoryRepository extends JpaRepository<ActiveBallotCategory, ActiveBallotCategoryKey> {
     Optional<ActiveBallotCategory> findByConcertIdAndCategoryId(Long concertId, Long categoryId);
-
-    @Transactional
-    void deleteByConcertIdAndCategoryId(Long concertId, Long categoryId);
 }

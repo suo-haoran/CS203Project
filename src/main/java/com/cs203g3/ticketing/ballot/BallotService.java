@@ -15,6 +15,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
+import com.cs203g3.ticketing.activeBallotCategory.ActiveBallotCategory;
+import com.cs203g3.ticketing.activeBallotCategory.ActiveBallotCategoryRepository;
+import com.cs203g3.ticketing.activeBallotCategory.EnumActiveBallotCategoryStatus;
 import com.cs203g3.ticketing.ballot.dto.BallotResponseDto;
 import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.category.CategoryRepository;
@@ -39,8 +42,8 @@ public class BallotService {
     private ModelMapper modelMapper;
     private TaskScheduler taskScheduler;
 
+    private ActiveBallotCategoryRepository activeBallotCategories;
     private BallotRepository ballots;
-
     private CategoryRepository categories;
     private ConcertSessionRepository concertSessions;
     private TicketRepository tickets;
@@ -52,12 +55,14 @@ public class BallotService {
 
     public BallotService(
             ModelMapper modelMapper, TaskScheduler taskScheduler,
+            ActiveBallotCategoryRepository activeBallotCategories,
             BallotRepository ballots, CategoryRepository categories, ConcertSessionRepository concertSessions,
             TicketRepository tickets, UserRepository users,
             EmailService emailService) {
         this.modelMapper = modelMapper;
         this.taskScheduler = taskScheduler;
 
+        this.activeBallotCategories = activeBallotCategories;
         this.ballots = ballots;
         this.categories = categories;
         this.concertSessions = concertSessions;
@@ -119,8 +124,9 @@ public class BallotService {
         ConcertSession concertSession = concertSessions.findById(concertSessionId)
                 .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
         Category category = categories
-                .findByVenueAndIdAndActiveBallotCategoriesConcertSessions(concertSession.getConcert().getVenue(),
-                        categoryId, concertSession)
+                .findByVenueAndIdAndActiveBallotCategoriesConcertSessionsAndActiveBallotCategoriesStatus(
+                        concertSession.getConcert().getVenue(), categoryId, concertSession,
+                        EnumActiveBallotCategoryStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "This category is either not available for balloting now or does not exist at all"));
 
@@ -194,7 +200,11 @@ public class BallotService {
      * @param categoryId       The ID of the category.
      */
     public void openNextPurchaseWindow(Long concertSessionId, Long categoryId) {
-        verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
+        ConcertSession concertSession = concertSessions.findById(concertSessionId)
+            .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
+        categories.findByVenueAndId(concertSession.getConcert().getVenue(), categoryId)
+            .orElseThrow(() -> new ResourceNotFoundException(Category.class, categoryId));
+
         // closes the current purchase window
         closeCurrentPurchaseWindow(concertSessionId, categoryId);
 
@@ -209,9 +219,11 @@ public class BallotService {
 
         if (availableSeats <= 0) {
             logger.info("No more available SEATS for next window, stopping here");
+            checkAndUpdateAbcStatusIfCompleted(concertSession.getConcert().getId(), categoryId);
             return;
         } else if (ballotsForNextWindow.size() <= 0) {
             logger.info("No more available BALLOTS for next window, stopping here");
+            checkAndUpdateAbcStatusIfCompleted(concertSession.getConcert().getId(), categoryId);
             return;
         }
 
@@ -233,5 +245,17 @@ public class BallotService {
         }, Instant.now().plusSeconds(WINDOW_ROTATION_IN_SECONDS));
         logger.info("Next window rotation for sessionId #<" + concertSessionId + "> scheduled in "
                 + WINDOW_ROTATION_IN_SECONDS + " seconds");
+    }
+
+    public void checkAndUpdateAbcStatusIfCompleted(Long concertId, Long categoryId) {
+        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryId(concertId, categoryId)
+            .orElseThrow(() -> new ResourceNotFoundException("Category with ConcertID #" + concertId + " and CategoryID #" + categoryId + " does not exist"));
+
+        if (ballots.countByConcertSessionConcertIdAndCategoryIdAndPurchaseAllowedIn(
+                concertId, categoryId, List.of(EnumPurchaseAllowed.NOT_YET, EnumPurchaseAllowed.ALLOWED)) == 0) {
+
+            abc.setStatus(EnumActiveBallotCategoryStatus.COMPLETED);
+            activeBallotCategories.save(abc);
+        };
     }
 }

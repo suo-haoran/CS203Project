@@ -25,9 +25,10 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 public class ActiveBallotCategoryService {
 
     private static Logger logger = LoggerFactory.getLogger(ActiveBallotCategoryService.class);
+    private final int SECONDS_BEFORE_FIRST_WINDOW = 10; // 48 hours
 
     private final TaskScheduler taskScheduler;
-    private Map<ActiveBallotCategory, ScheduledFuture<?>> scheduledTasks;
+    private Map<ActiveBallotCategory, ScheduledFuture<?>> abcClosingSchedule;
 
     private ActiveBallotCategoryRepository activeBallotCategories;
     private ConcertRepository concerts;
@@ -43,9 +44,10 @@ public class ActiveBallotCategoryService {
         this.activeBallotCategories = activeBallotCategories;
         this.concerts = concerts;
         this.categories = categories;
+
         this.ballotService = ballotService;
 
-        this.scheduledTasks = new HashMap<>();
+        this.abcClosingSchedule = new HashMap<>();
     }
 
     /**
@@ -70,21 +72,23 @@ public class ActiveBallotCategoryService {
 
         ScheduledFuture<?> task = taskScheduler.schedule(
             () -> {
-                deleteActiveBallotCategoryScheduled(abc);
                 randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
-                scheduleOpeningNextPurchaseWindow(abc);
+                scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
+                closeActiveBallotCategoryScheduled(abc);
             },
             Instant.now().plusSeconds(secondsBeforeClosure));
 
-        scheduledTasks.put(abc, task);
+        abcClosingSchedule.put(abc, task);
     }
 
-    private void deleteActiveBallotCategoryScheduled(ActiveBallotCategory abc) {
+    private void closeActiveBallotCategoryScheduled(ActiveBallotCategory abc) {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
 
-        logger.info("Scheduled closure of ActiveBallotCategory for ConcertId<" + concertId + ">, Category<" + categoryId + ">");
-        activeBallotCategories.delete(abc);
+        logger.info("Closing ActiveBallotCategory for ConcertId<" + concertId + ">, Category<" + categoryId + ">");
+
+        abc.setStatus(EnumActiveBallotCategoryStatus.AWAITING_FIRST_BALLOT_WINDOW);
+        activeBallotCategories.save(abc);
     }
 
     private void randomizeBallotResultsForAllSessionsInActiveBallotCategory(ActiveBallotCategory abc) {
@@ -97,14 +101,22 @@ public class ActiveBallotCategoryService {
         }
     }
 
-    private void scheduleOpeningNextPurchaseWindow(ActiveBallotCategory abc) {
+    private void scheduleOpeningFirstPurchaseWindow(ActiveBallotCategory abc, Integer secondsBeforeFirstWindow) {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
 
-        logger.info("Scheduling purchase window for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + ">");
-        for (ConcertSession session : abc.getConcert().getSessions()) {
-            ballotService.openNextPurchaseWindow(session.getId(), categoryId);
-        }
+        logger.info("Scheduling first purchase window for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + "> in " + secondsBeforeFirstWindow + " seconds");
+
+        taskScheduler.schedule(
+            () -> {
+                abc.setStatus(EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS);
+                activeBallotCategories.save(abc);
+
+                for (ConcertSession session : abc.getConcert().getSessions()) {
+                    ballotService.openNextPurchaseWindow(session.getId(), categoryId);
+                }
+            },
+            Instant.now().plusSeconds(secondsBeforeFirstWindow));
     }
 
     /**
@@ -128,8 +140,10 @@ public class ActiveBallotCategoryService {
     }
 
     /**
-     * Cancel the scheduled closure task for this ActiveBallotCategory
-     * The ActiveBallotCategory is also deleted
+     * Cancel the closure tasks for this ActiveBallotCategory
+     *      - Randomize ballot
+     *      - Schedule opening of first window
+     * The ActiveBallotCategory is also set to the next status 'AWAITING_FIRST_BALLOT_WINDOW'
      *
      * @param concertId The ID of the concert.
      * @param categoryId The ID of the category.
@@ -141,14 +155,14 @@ public class ActiveBallotCategoryService {
             .orElseThrow(() -> new ResourceNotFoundException("This category either is not in active balloting now or does not exist at all"));
 
         // Cancel scheduled task
-        ScheduledFuture<?> task = scheduledTasks.get(abc);
-        task.cancel(false);
+        ScheduledFuture<?> task = abcClosingSchedule.get(abc);
+        if (task != null) task.cancel(false);
 
-        // Delete entity
-        activeBallotCategories.delete(abc);
-
-        // Handle post closing
+        // Handle closing
         randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
-        scheduleOpeningNextPurchaseWindow(abc);
+        scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
+
+        // Actually close balloting window
+        closeActiveBallotCategoryScheduled(abc);
     }
 }

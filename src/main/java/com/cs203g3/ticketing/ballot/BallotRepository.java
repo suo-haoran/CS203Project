@@ -13,4 +13,8 @@ public interface BallotRepository extends JpaRepository<Ballot, Long> {
 
     List<Ballot> findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
         Long concertSessionId, Long categoryId, EnumPurchaseAllowed purchaseAllowed, Pageable pageable);
+
+    Integer countByConcertSessionConcertIdAndCategoryIdAndPurchaseAllowedIn(
+        Long concertSessionId, Long categoryId, List<EnumPurchaseAllowed> purchaseAllowedSet
+    );
 }
