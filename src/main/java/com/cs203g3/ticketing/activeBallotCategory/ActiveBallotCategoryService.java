@@ -26,7 +26,7 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 public class ActiveBallotCategoryService {
 
     private static Logger logger = LoggerFactory.getLogger(ActiveBallotCategoryService.class);
-    private final int SECONDS_BEFORE_FIRST_WINDOW = 60 ; // 48 hours
+    private final int SECONDS_BEFORE_FIRST_WINDOW = 60 * 60 * 48; // 48 hours
 
     private final TaskScheduler taskScheduler;
     private Map<ActiveBallotCategory, ScheduledFuture<?>> abcClosingSchedule;
