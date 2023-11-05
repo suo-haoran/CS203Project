@@ -3,6 +3,7 @@ package com.cs203g3.ticketing.activeBallotCategory;
 import java.time.Instant;
 import java.util.List;
 
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -61,6 +62,9 @@ public class ActiveBallotCategoryService {
      * @throws ResourceNotFoundException If the specified concert or category does not exist.
      */
     private void scheduleActiveBallotClosing(ActiveBallotCategory abc, Integer secondsBeforeClosure) {
+        // This line fetches all the ConcertSessions before the Hibernate transaction closes
+        Hibernate.initialize(abc.getConcert().getSessions());
+
         taskScheduler.schedule(
             () -> {
                 deleteActiveBallotCategory(abc);

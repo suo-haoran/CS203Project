@@ -207,8 +207,11 @@ public class BallotService {
                 .findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
                         concertSessionId, categoryId, EnumPurchaseAllowed.NOT_YET, PageRequest.of(0, availableSeats));
 
-        if (availableSeats <= 0 || ballotsForNextWindow.size() <= 0) {
-            logger.info("No more available seats/ballots for next window, stopping here");
+        if (availableSeats <= 0) {
+            logger.info("No more available SEATS for next window, stopping here");
+            return;
+        } else if (ballotsForNextWindow.size() <= 0) {
+            logger.info("No more available BALLOTS for next window, stopping here");
             return;
         }
 

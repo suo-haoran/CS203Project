@@ -64,7 +64,7 @@ public class Concert extends BaseEntity {
 
     // FetchType.EAGER here to allow iteration when handling ActiveBallot scheduling
     @JsonIgnore
-    @OneToMany(mappedBy="concert", cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+    @OneToMany(mappedBy="concert", cascade=CascadeType.ALL)
     private List<ConcertSession> sessions;
 
     @JsonIgnore
