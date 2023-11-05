@@ -90,6 +90,23 @@ public class BallotService {
     }
 
     /**
+     * Checks if a user has joined a specific balloting session.
+     *
+     * @param userDetails      The user details.
+     * @param concertSessionId The ID of the concert session.
+     * @param categoryId       The ID of the category.
+     * @return True if the user has joined the balloting session, false otherwise.
+     */
+    public Boolean isUserAllowedToPurchase(UserDetailsImpl userDetails, Long concertSessionId, Long categoryId) {
+        verifyValidConcertSessionIdAndCategoryId(concertSessionId, categoryId);
+        Long userId = userDetails.getId();
+
+        Ballot ballot = ballots.findByConcertSessionIdAndCategoryIdAndUserId(concertSessionId, categoryId, userId).orElseThrow(() -> new ResourceNotFoundException("User has not joined this balloting session"));
+
+        return ballot.getPurchaseAllowed() == EnumPurchaseAllowed.ALLOWED;
+    }
+
+    /**
      * Retrieves a list of ballots by concert session and category.
      *
      * @param concertSessionId The ID of the concert session.

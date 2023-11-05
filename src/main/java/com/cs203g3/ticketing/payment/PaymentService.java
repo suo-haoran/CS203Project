@@ -9,6 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.cs203g3.ticketing.ballot.Ballot;
+import com.cs203g3.ticketing.ballot.BallotRepository;
+import com.cs203g3.ticketing.ballot.EnumPurchaseAllowed;
+import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
 import com.cs203g3.ticketing.concertSession.ConcertSessionRepository;
 import com.cs203g3.ticketing.email.EmailService;
@@ -45,13 +49,14 @@ public class PaymentService {
     private SectionRepository sections;
     private TicketRepository tickets;
     private UserRepository users;
+    private BallotRepository ballots;
 
     private EmailService emailService;
     private ReceiptService receiptService;
 
     public PaymentService(ModelMapper modelMapper,
             ConcertSessionRepository concertSessions, SectionRepository sections, TicketRepository tickets,
-            UserRepository users,
+            UserRepository users, BallotRepository ballots,
             EmailService es, ReceiptService rs) {
         this.modelMapper = modelMapper;
 
@@ -59,6 +64,7 @@ public class PaymentService {
         this.sections = sections;
         this.tickets = tickets;
         this.users = users;
+        this.ballots = ballots;
 
         this.emailService = es;
         this.receiptService = rs;
@@ -155,8 +161,16 @@ public class PaymentService {
         ConcertSession concertSession = concertSessions.findById(concertSessionId)
                 .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
         Long sectionId = paymentDto.getSectionId();
-        sections.findByCategoryVenueAndId(concertSession.getConcert().getVenue(), sectionId)
+        Section section = sections.findByCategoryVenueAndId(concertSession.getConcert().getVenue(), sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException(Section.class, sectionId));
+
+        Category category = section.getCategory();
+
+        Ballot ballot = ballots.findByConcertSessionIdAndCategoryIdAndUserId(concertSessionId, category.getId(), user.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("User has not joined this balloting session, he/she shouldn't be able to purchase "));
+
+        ballot.setPurchaseAllowed(EnumPurchaseAllowed.BOUGHT);
+        ballots.save(ballot);
 
         // Generate receipt
         ReceiptRequestDto newReceiptDto = new ReceiptRequestDto(

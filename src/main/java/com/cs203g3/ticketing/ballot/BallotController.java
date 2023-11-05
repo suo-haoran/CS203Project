@@ -30,6 +30,12 @@ public class BallotController {
         return ballotService.getAllBallotsByConcertSessionIdAndCategoryId(concertSessionId, categoryId);
     }
 
+    @GetMapping("/user")
+    public Boolean isUserAllowedToPurchase(Authentication auth, @PathVariable Long concertSessionId, @PathVariable Long categoryId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        return ballotService.isUserAllowedToPurchase(userDetails, concertSessionId, categoryId);
+    }
+
     @PostMapping
     @ResponseStatus(code=HttpStatus.CREATED)
     public BallotResponseDto addBallotAsCurrentUser(Authentication auth, @PathVariable Long concertSessionId, @PathVariable Long categoryId) {
