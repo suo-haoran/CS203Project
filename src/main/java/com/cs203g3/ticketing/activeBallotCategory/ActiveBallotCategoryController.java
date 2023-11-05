@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cs203g3.ticketing.activeBallotCategory.dto.ActiveBallotCategoryRequestDto;
+import com.cs203g3.ticketing.activeBallotCategory.dto.BallotWindowOpeningDelayDto;
 
 import jakarta.validation.Valid;
 
@@ -41,7 +43,13 @@ public class ActiveBallotCategoryController {
 
     @DeleteMapping("/concerts/{concertId}/categories/{categoryId}/activeBallots")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void deleteActiveBallotCategory(@PathVariable Long concertId, @PathVariable Long categoryId) {
+    public void closeActiveBallotCategory(@PathVariable Long concertId, @PathVariable Long categoryId) {
         abcService.handleScheduledTasksAndDeleteActiveBallotCategory(concertId, categoryId);
+    }
+
+    @PutMapping("/concerts/{concertId}/categories/{categoryId}/firstBallotWindow")
+    public void adjustScheduledBallotWindowOpening(
+        @PathVariable Long concertId, @PathVariable Long categoryId, @Valid @RequestBody BallotWindowOpeningDelayDto dto) {
+        abcService.adjustScheduledFirstPurchaseWindowOpening(concertId, categoryId, dto);
     }
 }

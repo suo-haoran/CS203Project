@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.cs203g3.ticketing.activeBallotCategory.key.ActiveBallotCategoryKey;
 
-import jakarta.transaction.Transactional;
 
 public interface ActiveBallotCategoryRepository extends JpaRepository<ActiveBallotCategory, ActiveBallotCategoryKey> {
-    Optional<ActiveBallotCategory> findByConcertIdAndCategoryId(Long concertId, Long categoryId);
+    Optional<ActiveBallotCategory> findByConcertIdAndCategoryIdAndStatus(Long concertId, Long categoryId, EnumActiveBallotCategoryStatus status);
 }

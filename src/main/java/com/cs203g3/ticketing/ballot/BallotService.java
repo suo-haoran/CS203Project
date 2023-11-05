@@ -248,8 +248,8 @@ public class BallotService {
     }
 
     public void checkAndUpdateAbcStatusIfCompleted(Long concertId, Long categoryId) {
-        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryId(concertId, categoryId)
-            .orElseThrow(() -> new ResourceNotFoundException("Category with ConcertID #" + concertId + " and CategoryID #" + categoryId + " does not exist"));
+        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS)
+            .orElseThrow(() -> new ResourceNotFoundException("This category either is not RUNNING_PURCHASE_WINDOWS or does not exist at all"));
 
         if (ballots.countByConcertSessionConcertIdAndCategoryIdAndPurchaseAllowedIn(
                 concertId, categoryId, List.of(EnumPurchaseAllowed.NOT_YET, EnumPurchaseAllowed.ALLOWED)) == 0) {

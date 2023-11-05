@@ -13,6 +13,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.activeBallotCategory.dto.ActiveBallotCategoryRequestDto;
+import com.cs203g3.ticketing.activeBallotCategory.dto.BallotWindowOpeningDelayDto;
 import com.cs203g3.ticketing.ballot.BallotService;
 import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.category.CategoryRepository;
@@ -25,10 +26,11 @@ import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 public class ActiveBallotCategoryService {
 
     private static Logger logger = LoggerFactory.getLogger(ActiveBallotCategoryService.class);
-    private final int SECONDS_BEFORE_FIRST_WINDOW = 10; // 48 hours
+    private final int SECONDS_BEFORE_FIRST_WINDOW = 60 * 60 * 48; // 48 hours
 
     private final TaskScheduler taskScheduler;
     private Map<ActiveBallotCategory, ScheduledFuture<?>> abcClosingSchedule;
+    private Map<ActiveBallotCategory, ScheduledFuture<?>> ballotWindowOpeningSchedule;
 
     private ActiveBallotCategoryRepository activeBallotCategories;
     private ConcertRepository concerts;
@@ -48,6 +50,7 @@ public class ActiveBallotCategoryService {
         this.ballotService = ballotService;
 
         this.abcClosingSchedule = new HashMap<>();
+        this.ballotWindowOpeningSchedule = new HashMap<>();
     }
 
     /**
@@ -73,8 +76,8 @@ public class ActiveBallotCategoryService {
         ScheduledFuture<?> task = taskScheduler.schedule(
             () -> {
                 randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
-                scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
                 closeActiveBallotCategoryScheduled(abc);
+                scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
             },
             Instant.now().plusSeconds(secondsBeforeClosure));
 
@@ -87,7 +90,7 @@ public class ActiveBallotCategoryService {
 
         logger.info("Closing ActiveBallotCategory for ConcertId<" + concertId + ">, Category<" + categoryId + ">");
 
-        abc.setStatus(EnumActiveBallotCategoryStatus.AWAITING_FIRST_BALLOT_WINDOW);
+        abc.setStatus(EnumActiveBallotCategoryStatus.AWAITING_FIRST_PURCHASE_WINDOW);
         activeBallotCategories.save(abc);
     }
 
@@ -107,7 +110,7 @@ public class ActiveBallotCategoryService {
 
         logger.info("Scheduling first purchase window for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + "> in " + secondsBeforeFirstWindow + " seconds");
 
-        taskScheduler.schedule(
+        ScheduledFuture<?> task = taskScheduler.schedule(
             () -> {
                 abc.setStatus(EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS);
                 activeBallotCategories.save(abc);
@@ -117,6 +120,8 @@ public class ActiveBallotCategoryService {
                 }
             },
             Instant.now().plusSeconds(secondsBeforeFirstWindow));
+
+        ballotWindowOpeningSchedule.put(abc, task);
     }
 
     /**
@@ -140,6 +145,29 @@ public class ActiveBallotCategoryService {
     }
 
     /**
+     * Adjusts the time for the scheduled opening to X number of seconds
+     * of the balloting window in this ActiveBallotCategory
+     *      - Cancels the old task
+     *      - Schedules a new opening in X seconds
+     *
+     * @param concertId The ID of the concert.
+     * @param categoryId The ID of the category.
+     * @return void
+     * @throws ResourceNotFoundException If the specified ActiveBallotCategory does not exist.
+     */
+    public void adjustScheduledFirstPurchaseWindowOpening(Long concertId, Long categoryId, BallotWindowOpeningDelayDto dto) {
+        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.AWAITING_FIRST_PURCHASE_WINDOW)
+            .orElseThrow(() -> new ResourceNotFoundException("This category is either not AWAITING_FIRST_PURCHASE_WINDOW or does not exist at all"));
+        Hibernate.initialize(abc.getConcert().getSessions());
+
+        // Cancel scheduled task
+        ScheduledFuture<?> task = ballotWindowOpeningSchedule.get(abc);
+        if (task != null) task.cancel(false);
+
+        scheduleOpeningFirstPurchaseWindow(abc, dto.getSecondsBeforeOpening());
+    }
+
+    /**
      * Cancel the closure tasks for this ActiveBallotCategory
      *      - Randomize ballot
      *      - Schedule opening of first window
@@ -151,18 +179,16 @@ public class ActiveBallotCategoryService {
      * @throws ResourceNotFoundException If the specified ActiveBallotCategory does not exist.
      */
     public void handleScheduledTasksAndDeleteActiveBallotCategory(Long concertId, Long categoryId) {
-        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryId(concertId, categoryId)
+        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("This category either is not in active balloting now or does not exist at all"));
 
         // Cancel scheduled task
         ScheduledFuture<?> task = abcClosingSchedule.get(abc);
         if (task != null) task.cancel(false);
 
-        // Handle closing
+        // Handle closing of ballot window
         randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
-        scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
-
-        // Actually close balloting window
         closeActiveBallotCategoryScheduled(abc);
+        scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
     }
 }
