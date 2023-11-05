@@ -23,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
+import com.cs203g3.ticketing.activeBallotCategory.EnumActiveBallotCategoryStatus;
 import com.cs203g3.ticketing.ballot.dto.BallotResponseDto;
 import com.cs203g3.ticketing.category.Category;
 import com.cs203g3.ticketing.category.CategoryRepository;
@@ -178,8 +179,8 @@ public class BallotServiceTest {
         // Mock the behavior of repositories
         when(users.findById(userDetails.getId())).thenReturn(Optional.of(user));
         when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(concertSession));
-        when(categories.findByVenueAndIdAndActiveBallotCategoriesConcertSessions(concertSession.getConcert().getVenue(), categoryId,
-                concertSession)).thenReturn(Optional.of(category));
+        when(categories.findByVenueAndIdAndActiveBallotCategoriesConcertSessionsAndActiveBallotCategoriesStatus(concertSession.getConcert().getVenue(), categoryId,
+                concertSession, EnumActiveBallotCategoryStatus.ACTIVE)).thenReturn(Optional.of(category));
         when(ballots.save(Mockito.any(Ballot.class))).thenReturn(new Ballot());
         when(modelMapper.map(any(Ballot.class), eq(BallotResponseDto.class))).thenReturn(ballotDto);
         doNothing().when(emailService).sendBallotingConfirmationEmail(user, concertSession);
@@ -191,7 +192,7 @@ public class BallotServiceTest {
 
         verify(users).findById(userDetails.getId());
         verify(concertSessions).findById(concertSessionId);
-        verify(categories).findByVenueAndIdAndActiveBallotCategoriesConcertSessions(concertSession.getConcert().getVenue(), categoryId, concertSession);
+        verify(categories).findByVenueAndIdAndActiveBallotCategoriesConcertSessionsAndActiveBallotCategoriesStatus(concertSession.getConcert().getVenue(), categoryId, concertSession, EnumActiveBallotCategoryStatus.ACTIVE);
         verify(ballots).save(Mockito.any(Ballot.class));
         verify(modelMapper).map(any(Ballot.class), eq(BallotResponseDto.class));
     }
@@ -244,7 +245,7 @@ public class BallotServiceTest {
 
         when(users.findById(userDetails.getId())).thenReturn(Optional.of(new User()));
         when(concertSessions.findById(concertSessionId)).thenReturn(Optional.of(concertSession));
-        when(categories.findByVenueAndIdAndActiveBallotCategoriesConcertSessions(null, categoryId, concertSession))
+        when(categories.findByVenueAndIdAndActiveBallotCategoriesConcertSessionsAndActiveBallotCategoriesStatus(null, categoryId, concertSession, EnumActiveBallotCategoryStatus.ACTIVE))
                 .thenReturn(Optional.empty());
 
         assertThrowsExactly(ResourceNotFoundException.class, () -> {
