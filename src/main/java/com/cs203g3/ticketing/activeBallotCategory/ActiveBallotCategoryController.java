@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cs203g3.ticketing.activeBallotCategory.dto.ActiveBallotCategoryRequestDto;
+import com.cs203g3.ticketing.activeBallotCategory.dto.ActiveBallotCategoryWithTimerResponseDto;
 import com.cs203g3.ticketing.activeBallotCategory.dto.BallotWindowOpeningDelayDto;
 
 import jakarta.validation.Valid;
@@ -29,7 +30,7 @@ public class ActiveBallotCategoryController {
     }
 
     @GetMapping("/activeBallots")
-    public List<ActiveBallotCategory> getAllActiveBallotCategories() {
+    public List<ActiveBallotCategoryWithTimerResponseDto> getAllActiveBallotCategories() {
         return abcService.getAllActiveBallotCategories();
     }
 

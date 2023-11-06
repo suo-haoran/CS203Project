@@ -5,14 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import com.cs203g3.ticketing.activeBallotCategory.dto.ActiveBallotCategoryRequestDto;
+import com.cs203g3.ticketing.activeBallotCategory.dto.ActiveBallotCategoryWithTimerResponseDto;
 import com.cs203g3.ticketing.activeBallotCategory.dto.BallotWindowOpeningDelayDto;
 import com.cs203g3.ticketing.ballot.BallotService;
 import com.cs203g3.ticketing.category.Category;
@@ -28,6 +32,7 @@ public class ActiveBallotCategoryService {
     private static Logger logger = LoggerFactory.getLogger(ActiveBallotCategoryService.class);
     private final int SECONDS_BEFORE_FIRST_WINDOW = 60 * 60 * 48; // 48 hours
 
+    private ModelMapper modelMapper;
     private final TaskScheduler taskScheduler;
     private Map<ActiveBallotCategory, ScheduledFuture<?>> abcClosingSchedule;
     private Map<ActiveBallotCategory, ScheduledFuture<?>> ballotWindowOpeningSchedule;
@@ -39,10 +44,13 @@ public class ActiveBallotCategoryService {
     private BallotService ballotService;
 
     public ActiveBallotCategoryService(
-        TaskScheduler taskScheduler, ActiveBallotCategoryRepository activeBallotCategories,
+        ModelMapper modelMapper, TaskScheduler taskScheduler,
+        ActiveBallotCategoryRepository activeBallotCategories,
         ConcertRepository concerts, CategoryRepository categories,
         BallotService ballotService) {
+        this.modelMapper = modelMapper;
         this.taskScheduler = taskScheduler;
+
         this.activeBallotCategories = activeBallotCategories;
         this.concerts = concerts;
         this.categories = categories;
@@ -58,8 +66,26 @@ public class ActiveBallotCategoryService {
      *
      * @return A list of ActiveBallotCategory objects representing all active ballot categories.
      */
-    public List<ActiveBallotCategory> getAllActiveBallotCategories() {
-        return activeBallotCategories.findAll();
+    public List<ActiveBallotCategoryWithTimerResponseDto> getAllActiveBallotCategories() {
+        return activeBallotCategories.findAll().stream()
+            .map(abc -> {
+                // Sets the timer value into the DTO before returning
+                ActiveBallotCategoryWithTimerResponseDto dto = modelMapper.map(abc, ActiveBallotCategoryWithTimerResponseDto.class);
+                EnumActiveBallotCategoryStatus status = dto.getStatus();
+
+                Map<ActiveBallotCategory, ScheduledFuture<?>> scheduledTasks =
+                    status.equals(EnumActiveBallotCategoryStatus.ACTIVE) ? abcClosingSchedule
+                    : status.equals(EnumActiveBallotCategoryStatus.AWAITING_FIRST_PURCHASE_WINDOW) ? ballotWindowOpeningSchedule
+                    : new HashMap<>();
+
+                ScheduledFuture<?> task = scheduledTasks.get(abc);
+                if (task != null) {
+                    dto.setTimeToNextStatus(task.getDelay(TimeUnit.SECONDS));
+                }
+
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
 
     /**

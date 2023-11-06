@@ -265,8 +265,14 @@ public class BallotService {
     }
 
     public void checkAndUpdateAbcStatusIfCompleted(Long concertId, Long categoryId) {
-        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS)
-            .orElseThrow(() -> new ResourceNotFoundException("This category either is not RUNNING_PURCHASE_WINDOWS or does not exist at all"));
+        ActiveBallotCategory abc = activeBallotCategories
+            .findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS)
+            .orElse(null);
+
+        // Intentional to not do .orElseThrow() here, just return quietly
+        if (abc == null) {
+            return;
+        }
 
         if (ballots.countByConcertSessionConcertIdAndCategoryIdAndPurchaseAllowedIn(
                 concertId, categoryId, List.of(EnumPurchaseAllowed.NOT_YET, EnumPurchaseAllowed.ALLOWED)) == 0) {
