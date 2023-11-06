@@ -35,8 +35,7 @@ public class ActiveBallotCategoryService {
 
     private ModelMapper modelMapper;
     private final TaskScheduler taskScheduler;
-    private Map<ActiveBallotCategory, ScheduledFuture<?>> abcClosingSchedule;
-    private Map<ActiveBallotCategory, ScheduledFuture<?>> ballotWindowOpeningSchedule;
+    private Map<ActiveBallotCategory, ScheduledFuture<?>> scheduledTasksByAbc;
 
     private ActiveBallotCategoryRepository activeBallotCategories;
     private ConcertRepository concerts;
@@ -58,8 +57,7 @@ public class ActiveBallotCategoryService {
 
         this.ballotService = ballotService;
 
-        this.abcClosingSchedule = new HashMap<>();
-        this.ballotWindowOpeningSchedule = new HashMap<>();
+        this.scheduledTasksByAbc = new HashMap<>();
     }
 
     /**
@@ -72,14 +70,8 @@ public class ActiveBallotCategoryService {
             .map(abc -> {
                 // Sets the timer value into the DTO before returning
                 ActiveBallotCategoryWithTimerResponseDto dto = modelMapper.map(abc, ActiveBallotCategoryWithTimerResponseDto.class);
-                EnumActiveBallotCategoryStatus status = dto.getStatus();
 
-                Map<ActiveBallotCategory, ScheduledFuture<?>> scheduledTasks =
-                    status.equals(EnumActiveBallotCategoryStatus.ACTIVE) ? abcClosingSchedule
-                    : status.equals(EnumActiveBallotCategoryStatus.AWAITING_FIRST_PURCHASE_WINDOW) ? ballotWindowOpeningSchedule
-                    : new HashMap<>();
-
-                ScheduledFuture<?> task = scheduledTasks.get(abc);
+                ScheduledFuture<?> task = scheduledTasksByAbc.get(abc);
                 if (task != null) {
                     dto.setTimeToNextStatus(task.getDelay(TimeUnit.SECONDS));
                 }
@@ -108,7 +100,7 @@ public class ActiveBallotCategoryService {
             },
             Instant.now().plusSeconds(secondsBeforeClosure));
 
-        abcClosingSchedule.put(abc, task);
+        scheduledTasksByAbc.put(abc, task);
     }
 
     /**
@@ -169,7 +161,7 @@ public class ActiveBallotCategoryService {
             },
             Instant.now().plusSeconds(secondsBeforeFirstWindow));
 
-        ballotWindowOpeningSchedule.put(abc, task);
+        scheduledTasksByAbc.put(abc, task);
     }
 
     /**
@@ -214,7 +206,7 @@ public class ActiveBallotCategoryService {
         Hibernate.initialize(abc.getConcert().getSessions());
 
         // Cancel scheduled task
-        ScheduledFuture<?> task = ballotWindowOpeningSchedule.get(abc);
+        ScheduledFuture<?> task = scheduledTasksByAbc.get(abc);
         if (task != null) task.cancel(false);
 
         scheduleOpeningFirstPurchaseWindow(abc, dto.getSecondsBeforeOpening());
@@ -236,7 +228,7 @@ public class ActiveBallotCategoryService {
             .orElseThrow(() -> new ResourceNotFoundException("This category either is not in active balloting now or does not exist at all"));
 
         // Cancel scheduled task
-        ScheduledFuture<?> task = abcClosingSchedule.get(abc);
+        ScheduledFuture<?> task = scheduledTasksByAbc.get(abc);
         if (task != null) task.cancel(false);
 
         scheduleActiveBallotClosing(abc, dto.getSecondsBeforeClosure());
