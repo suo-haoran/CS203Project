@@ -32,6 +32,7 @@ public class ActiveBallotCategoryService {
 
     private static Logger logger = LoggerFactory.getLogger(ActiveBallotCategoryService.class);
     private final int SECONDS_BEFORE_FIRST_WINDOW = 60 * 60 * 48; // 48 hours
+    private final int SECONDS_PER_WINDOW_ROTATION = 60 * 60 * 24; // 24 hours
 
     private ModelMapper modelMapper;
     private final TaskScheduler taskScheduler;
@@ -96,11 +97,12 @@ public class ActiveBallotCategoryService {
             () -> {
                 randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
                 closeActiveBallotCategoryScheduled(abc);
-                scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
+                scheduleOpeningNextPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
             },
             Instant.now().plusSeconds(secondsBeforeClosure));
 
         scheduledTasksByAbc.put(abc, task);
+        logger.info("Closing of active ballot window for all Sessions in ConcertId<"+ abc.getConcert().getId() +">, Category<"+ abc.getCategory().getId() +"> scheduled in "+ secondsBeforeClosure +" seconds");
     }
 
     /**
@@ -138,30 +140,39 @@ public class ActiveBallotCategoryService {
     }
 
     /**
-     * Schedules the open of the first purchase window for this ActiveBallotCategory
+     * Schedules the opening of the next purchase window for this ActiveBallotCategory
      *
      * @param abc The ActiveBallotCategory for which the purchase window should be opened
-     * @param secondsBeforeFirstWindow No. of seconds before task (opening first window) is ran
+     * @param secondsBeforeNextWindow No. of seconds before task (opening next window) is ran
      * @return void
      */
-    private void scheduleOpeningFirstPurchaseWindow(ActiveBallotCategory abc, Integer secondsBeforeFirstWindow) {
+    private void scheduleOpeningNextPurchaseWindow(ActiveBallotCategory abc, Integer secondsBeforeNextWindow) {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
-
-        logger.info("Scheduling first purchase window for all Sessions in ConcertId<" + concertId + ">, Category<" + categoryId + "> in " + secondsBeforeFirstWindow + " seconds");
 
         ScheduledFuture<?> task = taskScheduler.schedule(
             () -> {
                 abc.setStatus(EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS);
                 activeBallotCategories.save(abc);
 
+                boolean windowStillRunning = false;
                 for (ConcertSession session : abc.getConcert().getSessions()) {
-                    ballotService.openNextPurchaseWindow(session.getId(), categoryId);
+                    // OR condition must be in this order, or else windowStillRunning will shortcircuit the boolean check
+                    windowStillRunning = ballotService.openNextPurchaseWindow(session.getId(), categoryId) || windowStillRunning;
+                }
+
+                if (windowStillRunning) {
+                    scheduleOpeningNextPurchaseWindow(abc, SECONDS_PER_WINDOW_ROTATION);
+                } else {
+                    abc.setStatus(EnumActiveBallotCategoryStatus.COMPLETED);
+                    activeBallotCategories.save(abc);
+                    scheduledTasksByAbc.remove(abc);
                 }
             },
-            Instant.now().plusSeconds(secondsBeforeFirstWindow));
+            Instant.now().plusSeconds(secondsBeforeNextWindow));
 
         scheduledTasksByAbc.put(abc, task);
+        logger.info("Next purchase window for all Sessions in ConcertId<"+ concertId +">, Category<"+ categoryId +"> scheduled in "+ secondsBeforeNextWindow +" seconds");
     }
 
     /**
@@ -200,16 +211,18 @@ public class ActiveBallotCategoryService {
      * @return void
      * @throws ResourceNotFoundException If the specified ActiveBallotCategory does not exist.
      */
-    public void adjustScheduledFirstPurchaseWindowOpening(Long concertId, Long categoryId, BallotWindowOpeningDelayDto dto) {
-        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.AWAITING_FIRST_PURCHASE_WINDOW)
-            .orElseThrow(() -> new ResourceNotFoundException("This category is either not AWAITING_FIRST_PURCHASE_WINDOW or does not exist at all"));
+    public void adjustScheduledNextPurchaseWindowOpening(Long concertId, Long categoryId, BallotWindowOpeningDelayDto dto) {
+        ActiveBallotCategory abc = activeBallotCategories
+            .findByConcertIdAndCategoryIdAndStatusIn(concertId, categoryId,
+                List.of(EnumActiveBallotCategoryStatus.AWAITING_FIRST_PURCHASE_WINDOW, EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS))
+            .orElseThrow(() -> new ResourceNotFoundException("This category is neither AWAITING_FIRST_PURCHASE_WINDOW nor RUNNING_PURCHASE_WINDOWS or might not exist at all"));
         Hibernate.initialize(abc.getConcert().getSessions());
 
         // Cancel scheduled task
         ScheduledFuture<?> task = scheduledTasksByAbc.get(abc);
         if (task != null) task.cancel(false);
 
-        scheduleOpeningFirstPurchaseWindow(abc, dto.getSecondsBeforeOpening());
+        scheduleOpeningNextPurchaseWindow(abc, dto.getSecondsBeforeOpening());
     }
 
     /**
@@ -224,7 +237,9 @@ public class ActiveBallotCategoryService {
      * @throws ResourceNotFoundException If the specified ActiveBallotCategory does not exist.
      */
     public void adjustScheduledActiveBallotCategoryClosing(Long concertId, Long categoryId, ActiveBallotCategoryRequestDto dto) {
-        ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.ACTIVE)
+        ActiveBallotCategory abc = activeBallotCategories
+            .findByConcertIdAndCategoryIdAndStatusIn(concertId, categoryId,
+                List.of(EnumActiveBallotCategoryStatus.ACTIVE))
             .orElseThrow(() -> new ResourceNotFoundException("This category either is not in active balloting now or does not exist at all"));
 
         // Cancel scheduled task

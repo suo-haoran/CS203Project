@@ -1,6 +1,5 @@
 package com.cs203g3.ticketing.ballot;
 
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,11 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import com.cs203g3.ticketing.activeBallotCategory.ActiveBallotCategory;
-import com.cs203g3.ticketing.activeBallotCategory.ActiveBallotCategoryRepository;
 import com.cs203g3.ticketing.activeBallotCategory.EnumActiveBallotCategoryStatus;
 import com.cs203g3.ticketing.ballot.dto.BallotResponseDto;
 import com.cs203g3.ticketing.category.Category;
@@ -40,9 +36,7 @@ public class BallotService {
     private static Logger logger = LoggerFactory.getLogger(BallotService.class);
 
     private ModelMapper modelMapper;
-    private TaskScheduler taskScheduler;
 
-    private ActiveBallotCategoryRepository activeBallotCategories;
     private BallotRepository ballots;
     private CategoryRepository categories;
     private ConcertSessionRepository concertSessions;
@@ -51,18 +45,14 @@ public class BallotService {
 
     private EmailService emailService;
 
-    private final int WINDOW_ROTATION_IN_SECONDS = 60 * 60 * 24; // 24 hours
 
     public BallotService(
-            ModelMapper modelMapper, TaskScheduler taskScheduler,
-            ActiveBallotCategoryRepository activeBallotCategories,
+            ModelMapper modelMapper,
             BallotRepository ballots, CategoryRepository categories, ConcertSessionRepository concertSessions,
             TicketRepository tickets, UserRepository users,
             EmailService emailService) {
         this.modelMapper = modelMapper;
-        this.taskScheduler = taskScheduler;
 
-        this.activeBallotCategories = activeBallotCategories;
         this.ballots = ballots;
         this.categories = categories;
         this.concertSessions = concertSessions;
@@ -216,7 +206,7 @@ public class BallotService {
      * @param concertSessionId The ID of the concert session.
      * @param categoryId       The ID of the category.
      */
-    public void openNextPurchaseWindow(Long concertSessionId, Long categoryId) {
+    public boolean openNextPurchaseWindow(Long concertSessionId, Long categoryId) {
         ConcertSession concertSession = concertSessions.findById(concertSessionId)
             .orElseThrow(() -> new ResourceNotFoundException(ConcertSession.class, concertSessionId));
         categories.findByVenueAndId(concertSession.getConcert().getVenue(), categoryId)
@@ -226,6 +216,10 @@ public class BallotService {
         closeCurrentPurchaseWindow(concertSessionId, categoryId);
 
         Integer availableSeats = tickets.countByConcertSessionIdAndReceiptIsNull(concertSessionId);
+        if (availableSeats <= 0) {
+            logger.info("No more available SEATS for sessionId<"+ concertSessionId +">, categoryId<"+ categoryId +">");
+            return false;
+        }
 
         // Set purchaseAllowed to ALLOWED for the next X # of ballots that have
         // purchaseAllowed = NOT_YET
@@ -233,15 +227,9 @@ public class BallotService {
         List<Ballot> ballotsForNextWindow = ballots
                 .findAllByConcertSessionIdAndCategoryIdAndPurchaseAllowedOrderByBallotResultAsc(
                         concertSessionId, categoryId, EnumPurchaseAllowed.NOT_YET, PageRequest.of(0, availableSeats));
-
-        if (availableSeats <= 0) {
-            logger.info("No more available SEATS for next window, stopping here");
-            checkAndUpdateAbcStatusIfCompleted(concertSession.getConcert().getId(), categoryId);
-            return;
-        } else if (ballotsForNextWindow.size() <= 0) {
-            logger.info("No more available BALLOTS for next window, stopping here");
-            checkAndUpdateAbcStatusIfCompleted(concertSession.getConcert().getId(), categoryId);
-            return;
+        if (ballotsForNextWindow.size() <= 0) {
+            logger.info("No more available BALLOTS for sessionId<"+ concertSessionId +">, categoryId<"+ categoryId +">");
+            return false;
         }
 
         for (Ballot ballot : ballotsForNextWindow) {
@@ -254,31 +242,8 @@ public class BallotService {
                             ballot.getConcertSession().getConcert().getVenue().getId()));
         }
         ballots.saveAll(ballotsForNextWindow);
-        logger.info("Window for sessionId #<" + concertSessionId + "> successfully opened for next <"
-                + ballotsForNextWindow.size() + "> users");
+        logger.info("Window for sessionId<"+ concertSessionId +">, categoryId<"+ categoryId +"> successfully opened for next <"+ ballotsForNextWindow.size() +"> users");
 
-        taskScheduler.schedule(() -> {
-            openNextPurchaseWindow(concertSessionId, categoryId);
-        }, Instant.now().plusSeconds(WINDOW_ROTATION_IN_SECONDS));
-        logger.info("Next window rotation for sessionId #<" + concertSessionId + "> scheduled in "
-                + WINDOW_ROTATION_IN_SECONDS + " seconds");
-    }
-
-    public void checkAndUpdateAbcStatusIfCompleted(Long concertId, Long categoryId) {
-        ActiveBallotCategory abc = activeBallotCategories
-            .findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.RUNNING_PURCHASE_WINDOWS)
-            .orElse(null);
-
-        // Intentional to not do .orElseThrow() here, just return quietly
-        if (abc == null) {
-            return;
-        }
-
-        if (ballots.countByConcertSessionConcertIdAndCategoryIdAndPurchaseAllowedIn(
-                concertId, categoryId, List.of(EnumPurchaseAllowed.NOT_YET, EnumPurchaseAllowed.ALLOWED)) == 0) {
-
-            abc.setStatus(EnumActiveBallotCategoryStatus.COMPLETED);
-            activeBallotCategories.save(abc);
-        };
+        return true;
     }
 }

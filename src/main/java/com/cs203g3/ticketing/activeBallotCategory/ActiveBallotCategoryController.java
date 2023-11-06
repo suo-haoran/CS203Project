@@ -48,9 +48,9 @@ public class ActiveBallotCategoryController {
         abcService.adjustScheduledActiveBallotCategoryClosing(concertId, categoryId, dto);
     }
 
-    @PutMapping("/concerts/{concertId}/categories/{categoryId}/firstPurchaseWindow")
-    public void adjustScheduledFirstPurchaseWindowOpening(
+    @PutMapping("/concerts/{concertId}/categories/{categoryId}/nextPurchaseWindow")
+    public void adjustScheduledNextPurchaseWindowOpening(
         @PathVariable Long concertId, @PathVariable Long categoryId, @Valid @RequestBody BallotWindowOpeningDelayDto dto) {
-        abcService.adjustScheduledFirstPurchaseWindowOpening(concertId, categoryId, dto);
+        abcService.adjustScheduledNextPurchaseWindowOpening(concertId, categoryId, dto);
     }
 }
