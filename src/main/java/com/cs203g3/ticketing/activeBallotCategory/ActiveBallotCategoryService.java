@@ -89,7 +89,7 @@ public class ActiveBallotCategoryService {
     }
 
     /**
-     * Handles the scheduled closing of an active ballot cateogory
+     * Schedules the closing of an active ballot cateogory
      *
      * @param abc The ActiveBallotCategory to be closed
      * @param secondsBeforeClosure No. of seconds before task (closing ABC) is ran
@@ -110,6 +110,12 @@ public class ActiveBallotCategoryService {
         abcClosingSchedule.put(abc, task);
     }
 
+    /**
+     * Closes the ActiveBallotCategory (set status to AWAITING_FIRST_PURCHASE_WINDOW)
+     *
+     * @param abc The ActiveBallotCategory to be closed
+     * @return void
+     */
     private void closeActiveBallotCategoryScheduled(ActiveBallotCategory abc) {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
@@ -120,6 +126,14 @@ public class ActiveBallotCategoryService {
         activeBallotCategories.save(abc);
     }
 
+
+    /**
+     * Shuffles the ballot results for all submitted ballot
+     * Sets the result in the "ballotResult" field for the Ballot entity
+     *
+     * @param abc The ActiveBallotCategory with the Ballots to be shuffled
+     * @return void
+     */
     private void randomizeBallotResultsForAllSessionsInActiveBallotCategory(ActiveBallotCategory abc) {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
@@ -130,6 +144,13 @@ public class ActiveBallotCategoryService {
         }
     }
 
+    /**
+     * Schedules the open of the first purchase window for this ActiveBallotCategory
+     *
+     * @param abc The ActiveBallotCategory for which the purchase window should be opened
+     * @param secondsBeforeFirstWindow No. of seconds before task (opening first window) is ran
+     * @return void
+     */
     private void scheduleOpeningFirstPurchaseWindow(ActiveBallotCategory abc, Integer secondsBeforeFirstWindow) {
         Long concertId = abc.getConcert().getId();
         Long categoryId = abc.getCategory().getId();
@@ -204,7 +225,7 @@ public class ActiveBallotCategoryService {
      * @return void
      * @throws ResourceNotFoundException If the specified ActiveBallotCategory does not exist.
      */
-    public void handleScheduledTasksAndDeleteActiveBallotCategory(Long concertId, Long categoryId) {
+    public void adjustScheduledActiveBallotCategoryClosing(Long concertId, Long categoryId, ActiveBallotCategoryRequestDto dto) {
         ActiveBallotCategory abc = activeBallotCategories.findByConcertIdAndCategoryIdAndStatus(concertId, categoryId, EnumActiveBallotCategoryStatus.ACTIVE)
             .orElseThrow(() -> new ResourceNotFoundException("This category either is not in active balloting now or does not exist at all"));
 
@@ -212,9 +233,6 @@ public class ActiveBallotCategoryService {
         ScheduledFuture<?> task = abcClosingSchedule.get(abc);
         if (task != null) task.cancel(false);
 
-        // Handle closing of ballot window
-        randomizeBallotResultsForAllSessionsInActiveBallotCategory(abc);
-        closeActiveBallotCategoryScheduled(abc);
-        scheduleOpeningFirstPurchaseWindow(abc, SECONDS_BEFORE_FIRST_WINDOW);
+        scheduleActiveBallotClosing(abc, dto.getSecondsBeforeClosure());
     }
 }
