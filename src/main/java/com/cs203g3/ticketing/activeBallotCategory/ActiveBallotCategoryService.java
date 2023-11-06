@@ -24,6 +24,7 @@ import com.cs203g3.ticketing.category.CategoryRepository;
 import com.cs203g3.ticketing.concert.Concert;
 import com.cs203g3.ticketing.concert.ConcertRepository;
 import com.cs203g3.ticketing.concertSession.ConcertSession;
+import com.cs203g3.ticketing.exception.ResourceAlreadyExistsException;
 import com.cs203g3.ticketing.exception.ResourceNotFoundException;
 
 @Service
@@ -182,6 +183,11 @@ public class ActiveBallotCategoryService {
      * @throws ResourceNotFoundException If the specified concert or category does not exist.
      */
     public ActiveBallotCategory addActiveBallotCategory(Long concertId, Long categoryId, ActiveBallotCategoryRequestDto dto) {
+        activeBallotCategories.findByConcertIdAndCategoryId(concertId, categoryId)
+            .ifPresent(value -> {
+                throw new ResourceAlreadyExistsException("An ActiveBallotCategory for ConcertID<"+ concertId +"> and CategoryID<"+ categoryId +"> already exists");
+            });
+
         Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
         Category category = categories.findByVenueAndId(concert.getVenue(), categoryId).orElseThrow(() -> new ResourceNotFoundException(Category.class, categoryId));
 

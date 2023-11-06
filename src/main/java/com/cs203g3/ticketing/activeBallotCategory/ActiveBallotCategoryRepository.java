@@ -8,5 +8,6 @@ import com.cs203g3.ticketing.activeBallotCategory.key.ActiveBallotCategoryKey;
 
 
 public interface ActiveBallotCategoryRepository extends JpaRepository<ActiveBallotCategory, ActiveBallotCategoryKey> {
+    Optional<ActiveBallotCategory> findByConcertIdAndCategoryId(Long concertId, Long categoryId);
     Optional<ActiveBallotCategory> findByConcertIdAndCategoryIdAndStatus(Long concertId, Long categoryId, EnumActiveBallotCategoryStatus status);
 }
