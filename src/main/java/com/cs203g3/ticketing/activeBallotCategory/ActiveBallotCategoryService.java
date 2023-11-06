@@ -186,9 +186,9 @@ public class ActiveBallotCategoryService {
      * @throws ResourceNotFoundException If the specified concert or category does not exist.
      */
     public ActiveBallotCategory addActiveBallotCategory(Long concertId, Long categoryId, ActiveBallotCategoryRequestDto dto) {
-        activeBallotCategories.findByConcertIdAndCategoryId(concertId, categoryId)
+        activeBallotCategories.findByConcertIdAndCategoryIdAndStatusNotIn(concertId, categoryId, List.of(EnumActiveBallotCategoryStatus.COMPLETED))
             .ifPresent(value -> {
-                throw new ResourceAlreadyExistsException("An ActiveBallotCategory for ConcertID<"+ concertId +"> and CategoryID<"+ categoryId +"> already exists");
+                throw new ResourceAlreadyExistsException("An ActiveBallotCategory for ConcertID<"+ concertId +"> and CategoryID<"+ categoryId +"> is still in process, please wait until it is completed.");
             });
 
         Concert concert = concerts.findById(concertId).orElseThrow(() -> new ResourceNotFoundException(Concert.class, concertId));
